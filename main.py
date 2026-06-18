@@ -4,19 +4,22 @@ from qiskit import transpile, QuantumRegister, ClassicalRegister
 
 
 def main():
-  quantumVectorCircuit = constructQuantumVector([7, 6, 5], 3)
+  quantumVectorCircuit = selectAccess([4, 5, 6, 7], 3)
 
-  quantumAccessCircuit = accessElement(quantumVectorCircuit, 0, 3)
+  quantumVectorCircuit.add_register(ClassicalRegister(3))
+  quantumVectorCircuit.measure(2, 2)
+  quantumVectorCircuit.measure(3, 1)
+  quantumVectorCircuit.measure(4, 0)
 
-  quantumAccessCircuit.draw('mpl', filename="image.jpg")
+  quantumVectorCircuit.draw('mpl', filename="image.jpg")
 
-  # simulator = Aer.get_backend('aer_simulator')
-  # compiled_circuit = transpile(quantumAccessCircuit, simulator)
+  simulator = Aer.get_backend('aer_simulator')
+  compiled_circuit = transpile(quantumVectorCircuit, simulator)
 
-  # job = simulator.run(compiled_circuit, shots=1024)
-  # result = job.result()
-  # cnt = result.get_counts(compiled_circuit)
-  # print(cnt)
+  job = simulator.run(compiled_circuit, shots=1024)
+  result = job.result()
+  cnt = result.get_counts(compiled_circuit)
+  print(cnt)
 
 
 if __name__ == "__main__":
