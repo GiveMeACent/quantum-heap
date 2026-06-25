@@ -113,5 +113,29 @@ def greaterThan(bits: int, qregs: list[QuantumRegister] | None = None, firstValu
   return qc.to_gate(label="GT")
 
 
-def propertyVerifier(qc: QuantumCircuit) -> QuantumCircuit:
+def propertyVerifier(vector: list[int], bits: int, cQAddrValues: QuantumRegister = None, cQRegValues: QuantumRegister = None) -> QuantumCircuit:
+  if cQAddrValues is None and cQRegValues is None:
+    cQAddrValues = QuantumRegister(3 * bits, 'address')
+    cQRegValues = QuantumRegister(3 * bits + 3, 'values')
+
+  qc = QuantumCircuit(cQAddrValues, cQRegValues)
+
+  qc.compose(leftChildCircuit(
+      bits, customQAddrReg=cQAddrValues, customQRegValues=cQRegValues), inplace=True)
+  qc.compose(rightChildCircuit(
+      bits, customQAddrReg=cQAddrValues, customQRegValues=cQRegValues, addrStartIndex=bits), inplace=True)
+  qc.compose(selectAccess(
+      vector, bits, customQAddrReg=cQAddrValues, customQRegValues=cQRegValues), inplace=True)
+  qc.compose(selectAccess(
+      vector, bits, customQAddrReg=cQAddrValues, customQRegValues=cQRegValues, addrStartIndex=bits, valuesStartIndex=bits), inplace=True)
+  qc.compose(selectAccess(
+      vector, bits, customQAddrReg=cQAddrValues, customQRegValues=cQRegValues, addrStartIndex=bits * 2, valuesStartIndex=bits * 2), inplace=True)
+
+  qc.compose(greaterThan(
+      bits, qregs=[cQAddrValues, cQRegValues], firstValueStartIndex=bits * 3, secondValueStartIndex=bits * 3 + bits, outIndex=bits * 3 + bits * 3), inplace=True)
+
+  qc.compose(greaterThan(
+      bits, qregs=[cQAddrValues, cQRegValues], firstValueStartIndex=bits * 3, secondValueStartIndex=bits * 3 + bits * 2, outIndex=bits * 3 + bits * 3 + 1), inplace=True)
+
+  qc.ccx(cQRegValues[-3], cQRegValues[-2], cQRegValues[-1])
   return qc
