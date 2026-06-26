@@ -4,36 +4,30 @@ from qiskit import transpile, QuantumRegister, ClassicalRegister
 
 
 def main():
-  cQAddrValues: QuantumRegister = QuantumRegister(9, 'address')
-  cQRegValues: QuantumRegister = QuantumRegister(12, 'values')
-  creg: ClassicalRegister = ClassicalRegister(12, 'result')
+  cQAddrValues: QuantumRegister = QuantumRegister(9)
+  cQRegValues: QuantumRegister = QuantumRegister(12)
+  phase: QuantumRegister = QuantumRegister(1)
+  creg: ClassicalRegister = ClassicalRegister(13)
   vector: list[int] = [6, 5, 4, 3, 2, 1, 0]
   bits: int = 3
 
-  fullCircuit = QuantumCircuit(cQAddrValues, cQRegValues, creg)
-
-  fullCircuit.h(1)
-  fullCircuit.h(2)
-
-  fullCircuit.compose(propertyVerifier(
+  fullCircuit = QuantumCircuit(cQAddrValues, cQRegValues, phase, creg)
+  fullCircuit.compose(groverSearch(
       vector, bits, cQAddrValues, cQRegValues), inplace=True)
-
   fullCircuit.draw('mpl', filename='test.jpg')
 
-  fullCircuit.measure(cQRegValues[0], 11)
-  fullCircuit.measure(cQRegValues[1], 10)
-  fullCircuit.measure(cQRegValues[2], 9)
-  fullCircuit.measure(cQRegValues[3], 8)
-  fullCircuit.measure(cQRegValues[4], 7)
-  fullCircuit.measure(cQRegValues[5], 6)
-  fullCircuit.measure(cQRegValues[6], 5)
-  fullCircuit.measure(cQRegValues[7], 4)
-  fullCircuit.measure(cQRegValues[8], 3)
-  fullCircuit.measure(cQRegValues[9], 2)
-  fullCircuit.measure(cQRegValues[10], 1)
-  fullCircuit.measure(cQRegValues[11], 0)
-
-  fullCircuit.draw('mpl', filename='test.jpg')
+  fullCircuit.measure(cQAddrValues[0], 12)
+  fullCircuit.measure(cQAddrValues[1], 11)
+  fullCircuit.measure(cQAddrValues[2], 10)
+  fullCircuit.measure(cQAddrValues[3], 9)
+  fullCircuit.measure(cQAddrValues[4], 8)
+  fullCircuit.measure(cQAddrValues[5], 7)
+  fullCircuit.measure(cQAddrValues[6], 6)
+  fullCircuit.measure(cQAddrValues[7], 5)
+  fullCircuit.measure(cQAddrValues[8], 4)
+  fullCircuit.measure(cQRegValues[9], 3)
+  fullCircuit.measure(cQRegValues[10], 2)
+  fullCircuit.measure(cQRegValues[11], 1)
 
   simulator = Aer.get_backend('aer_simulator')
   compiled_circuit = transpile(fullCircuit, simulator)

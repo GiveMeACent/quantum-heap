@@ -1,5 +1,6 @@
 from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.circuit import Gate
+from math import pi, sqrt
 
 
 def constructQuantumVector(v: list[int], d: int) -> QuantumCircuit:
@@ -60,7 +61,7 @@ def selectAccess(values: list[int], bits: int, index: int | None = None, customQ
       if (binAddress[j] == '0'):
         qc.x(qAddrReg[j + addrStartIndex])
 
-  return qc.to_gate(label='UA')
+  return qc.to_gate()
 
 
 def leftChildCircuit(bits: int, customQAddrReg: QuantumRegister | None = None, customQRegValues: QuantumRegister | None = None, addrStartIndex: int = 0) -> Gate:
@@ -71,7 +72,7 @@ def leftChildCircuit(bits: int, customQAddrReg: QuantumRegister | None = None, c
   for j in range(bits - 1):
     qc.cx(bits - 1 - j, 2 * bits - 2 - j + addrStartIndex)
   qc.x(2 * bits - 1 + addrStartIndex)
-  return qc.to_gate(label="LC")
+  return qc.to_gate()
 
 
 def rightChildCircuit(bits: int, customQAddrReg: QuantumRegister | None = None, customQRegValues: QuantumRegister | None = None, addrStartIndex: int = 0) -> Gate:
@@ -88,7 +89,7 @@ def rightChildCircuit(bits: int, customQAddrReg: QuantumRegister | None = None, 
       qc.mcx(controls, target)
     else:
       qc.x(target)
-  return qc.to_gate(label="RC")
+  return qc.to_gate()
 
 
 def greaterThan(bits: int, qregs: list[QuantumRegister] | None = None, firstValueStartIndex: int = 0, secondValueStartIndex: int = 0, outIndex: int = 0) -> Gate:
@@ -110,7 +111,7 @@ def greaterThan(bits: int, qregs: list[QuantumRegister] | None = None, firstValu
     j = bits-i-2
     qc.x(secondValueStartIndex + j)
     qc.cx(firstValueStartIndex + j, secondValueStartIndex + j)
-  return qc.to_gate(label="GT")
+  return qc.to_gate()
 
 
 def propertyVerifier(vector: list[int], bits: int, cQAddrValues: QuantumRegister = None, cQRegValues: QuantumRegister = None) -> QuantumCircuit:
@@ -138,4 +139,56 @@ def propertyVerifier(vector: list[int], bits: int, cQAddrValues: QuantumRegister
       bits, qregs=[cQAddrValues, cQRegValues], firstValueStartIndex=bits * 3, secondValueStartIndex=bits * 3 + bits * 2, outIndex=bits * 3 + bits * 3 + 1), inplace=True)
 
   qc.ccx(cQRegValues[-3], cQRegValues[-2], cQRegValues[-1])
+  return qc.to_gate()
+
+
+def groverSearch(vector: list[int], bits: int,
+                 cQAddrValues: QuantumRegister = None,
+                 cQRegValues: QuantumRegister = None) -> QuantumCircuit:
+
+  def grover_diffuser(qc, qubits):
+    qc.h(qubits)
+    qc.x(qubits)
+    qc.h(qubits[-1])
+    qc.mcx(qubits[:-1], qubits[-1])
+    qc.h(qubits[-1])
+    qc.x(qubits)
+    qc.h(qubits)
+
+  if cQAddrValues is None and cQRegValues is None:
+    cQAddrValues = QuantumRegister(3 * bits, 'address')
+    cQRegValues = QuantumRegister(3 * bits + 3, 'values')
+
+  phase_kick = QuantumRegister(1, 'phase')
+  qc = QuantumCircuit(cQAddrValues, cQRegValues, phase_kick)
+
+  search_qubits = list(cQAddrValues[1:bits])
+  flag = cQRegValues[-1]
+
+  qc.h(search_qubits)
+
+  qc.x(phase_kick)
+  qc.h(phase_kick)
+
+  qc.barrier()
+
+  N = 2 ** (bits - 1)
+  iterations = int((pi / 4) * sqrt(N))
+  pv = propertyVerifier(vector, bits, cQAddrValues, cQRegValues)
+
+  for _ in range(iterations):
+    qc.compose(pv, inplace=True)
+    qc.barrier()
+
+    qc.x(flag)
+    qc.cx(flag, phase_kick[0])
+    qc.x(flag)
+    qc.barrier()
+
+    qc.compose(pv.inverse(), inplace=True)
+    qc.barrier()
+
+    grover_diffuser(qc, search_qubits)
+    qc.barrier()
+
   return qc
