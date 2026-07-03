@@ -1,0 +1,161 @@
+\chapter{Principi di computazione quantistica}
+\section{Introduzione}
+Come già accennato, l'obiettivo è la costruzione e l'indagine della struttura dati Max Heap nel contesto della computazione quantistica. A tal fine, in questo capitolo vengono introdotti i concetti matematici e fisici necessari a comprendere il resto della trattazione.
+
+Nella Sezione~\ref{sec:richiami-algebra} si richiamano gli strumenti di algebra lineare (spazi di Hilbert, notazione di Dirac, operatori lineari e prodotto tensoriale) su cui si fonda il formalismo quantistico. Nella Sezione~\ref{sec:qubit} si introduce formalmente il qubit, la sua rappresentazione geometrica tramite la sfera di Bloch e i fenomeni di sovrapposizione e correlazione che ne caratterizzano il comportamento. Nella Sezione~\ref{sec:operazioni} si descrivono le operazioni che è possibile compiere sui qubit, distinguendo tra porte singole e porte controllate, che costituiscono i mattoni fondamentali di ogni circuito quantistico. Infine, nella Sezione~\ref{sec:algoritmi} questi strumenti vengono applicati alla descrizione dell'algoritmo di Grover, un esempio paradigmatico di algoritmo quantistico che offre gli strumenti concettuali utilizzati nel seguito della trattazione.
+
+\section{Richiami di algebra \label{sec:richiami-algebra}}
+\subsection{Spazi di Hilbert}
+Uno degli oggetti centrali per la rappresentazione dell'informazione quantistica è lo spazio di Hilbert $\mathcal{H} = \mathbb{C}^d$ dei vettori colonna sui numeri complessi dotato del prodotto scalare. Un generico vettore di questo spazio $v \in \mathcal{H}$ ha la seguente forma:
+\begin{equation}
+  v =
+  \begin{pmatrix}
+  v_0\\
+  v_1\\
+  \vdots\\
+  v_{d - 1}
+  \end{pmatrix}
+\end{equation}
+Ogni valore $v_k$ con $k \in [0, d - 1]$ è chiamato ampiezza. La norma del vettore $v$, denotata con $||v||$, è così definita:
+\begin{equation}
+  ||v|| = \left(\sum_i |v_i|^2\right)^{\frac{1}{2}}
+\end{equation}
+Si denota poi $v(i) = v_i$.
+\subsection{Notazione di Dirac}
+Nella presente trattazione si utilizza la notazione di Dirac, o notazione bra-ket, per rappresentare i vettori dello spazio di Hilbert. Per rappresentare un generico vettore $v \in \mathcal{H}$ si scrive:
+\begin{equation}
+  | v \rangle = \begin{pmatrix}
+  v_0\\
+  v_1\\
+  \vdots\\
+  v_{d - 1}
+  \end{pmatrix}
+  \iff
+  \langle v | = (v_0^*, v_1^*, \dots, v_{d - 1}^*).
+\end{equation}
+Il prodotto scalare tra due vettori $v, w \in \mathcal{H}$ è definito come segue: $\langle v | w \rangle = \sum_{i = 0}^{d - 1}{v_i^* w_i}$.
+\subsection{Basi di uno spazio di Hilbert}
+Se $\mathcal{H}$ è uno spazio di Hilbert arbitrario con dimensione $d$ finita, allora si può scegliere una base ortonormale $\{|e_i\rangle\}^{d - 1}_{i=0}$, cioè tale che:
+\begin{equation}
+\langle e_i | e_j \rangle =
+\begin{cases}
+  1 \text{ se } i = j\\
+  0 \text{ se } i \neq j\\
+\end{cases}
+\end{equation}
+La base ortonormale standard di $\mathcal{H} = \mathbb{C}^d$ è la seguente serie di vettori:
+\begin{equation}
+  |0\rangle = \begin{pmatrix}
+    1\\
+    0\\
+    \vdots\\
+    0
+  \end{pmatrix},
+  |1\rangle = \begin{pmatrix}
+    0\\
+    1\\
+    \vdots\\
+    0
+  \end{pmatrix},
+  |d - 1\rangle = \begin{pmatrix}
+    0\\
+    0\\
+    \vdots\\
+    1
+  \end{pmatrix}.
+\end{equation}
+Se $|\psi\rangle = \begin{pmatrix} \psi_0\\\psi_1\\\vdots\\\psi_{d - 1} \end{pmatrix}$ allora $|\psi\rangle = \sum_{i = 0}^{d - 1}{\psi_i|i\rangle}$.
+
+\subsection{Operatori lineari}
+All'interno di uno spazio di Hilbert, le matrici rappresentano delle operazioni lineari. Esse si possono comporre ed utilizzare per operare sui vettori. Formalmente, dati $\mathcal{H} = \mathbb{C}^d$ e $\mathcal{K} = \mathbb{C}^e$ spazi di Hilbert, $\operatorname{Lin}(\mathcal{H}, \mathcal{K})$ è l'insieme delle mappe lineari da $\mathcal{H}$ a $\mathcal{K}$, se fissiamo una base per $\mathcal{H}$ e una $\mathcal{K}$ allora ogni mappa di $\operatorname{Lin}(\mathcal{H}, \mathcal{K})$ può essere scritta come una matrice $e \times d$. Una delle proprietà cruciali delle matrici è che esse definiscono operazioni lineari, per una matrice $M$ e due vettori $a$ e $b$ si ha:
+\begin{equation}
+  M(a + b) = Ma + Mb.
+\end{equation}
+La matrice $I$ è la matrice identità. Una matrice $M$ è unitaria se $M^\dagger M = I$. $M$ è invertibile se esiste $N$ tale che $MN=NM=I$, in particolare, se M è unitaria, allora $N = M^\dagger M$.
+
+\subsection{Prodotto tensoriale}
+Dati $\mathcal{H}$ e $\mathcal{K}$ due spazi di Hilbert di dimensione, rispettivamente, $n$ e $m$, il loro prodotto tensoriale, denotato come $\mathcal{H} \otimes \mathcal{K}$ è lo spazio di Hlbert che contiene tutte le combinazioni lineari di vettori della forma $v \otimes w$ con $v \in \mathcal{H}, w \in \mathcal{K}$. Il prodotto tensoriale gode delle proprietà di bilinearità e associatività. Inoltre, il vettore risultante $c = a \otimes b$ appartenente allo spazio $\mathcal{H} \otimes \mathcal{K}$ ha dimensione $n \times m$ e per qualsiasi $(i, j), i \in [0, n - 1], j \in [0, m - 1]$ si ha $c(ij) = a(i)b(j)$.
+
+\section{Il qubit \label{sec:qubit}}
+\subsection{Lo spazio e gli stati}
+Un qubit costituisce l'unità di informazione quantistica; il suo stato appartiene allo spazio di Hilbert $\mathbb{C}^2$ e ha la seguente forma:
+\begin{equation}
+  q =
+  \begin{pmatrix}
+    \alpha\\
+    \beta
+  \end{pmatrix}
+\end{equation}
+Le due ampiezze $\alpha$ e $\beta$ devono rispettare la seguente relazione:
+\begin{equation}
+  |\alpha|^2 + |\beta|^2 = 1
+\end{equation}
+I sistemi formati da più qubit sono esprimibili tramite il prodotto tensoriale tra i singoli qubit. Dati $n$ qubit, il sistema è formato da $N = 2^n$ ampiezze e ha questa forma:
+\begin{equation}
+  a =
+  \begin{pmatrix}
+    a_0\\
+    a_1\\
+    \vdots\\
+    a_{N - 1}
+  \end{pmatrix}
+\end{equation}
+
+\subsection{Sfera di Bloch}
+La sfera di Bloch è la rappresentazione geometrica dello stato di un qubit. I poli nord e sud di questa sfera rappresentano, rispettivamente, i vettori $|0\rangle$ e $|1\rangle$. Gli stati che descriveremo all'interno della trattazione si trovano tutti in corrispondenza della superficie della sfera, questi stati si definiscono "stati puri". La relazione che rappresenta il generico qubit sulla sfera di Bloch è la seguente:
+\begin{equation}
+  |\psi\rangle = \cos{\frac{\theta}{2}}|0\rangle + e^{i\phi}\sin{\frac{\theta}{2}}|1\rangle
+\end{equation}
+\subsection{Sovrapposizione}
+Il primo fenomeno fondamentale della meccanica quantistica è quello della sovrapposizione. Secondo questo fenomeno, due o più stati quantistici possono essere combinati linearmente insieme e il risultato è un altro stato quantistico. Lo stato di un qubit è rappresentato dalla sovrapposizione lineare dei due stati di base ortonormali. Formalmente, uno stato generico in sovrapposizione $|\psi\rangle$ è così rappresentabile:
+\begin{equation}
+  |\psi\rangle = \psi_0 |e_0\rangle + \psi_1 |e_1\rangle + \dots + \psi_{N-1} |e_{N-1}\rangle = \begin{pmatrix} \psi_0\\\psi_1\\\vdots\\\psi_{N - 1} \end{pmatrix}
+\end{equation}
+\subsection{Correlazione}
+Il secondo fenomeno fondamentale della meccanica quantistica è quello della correlazione o "entanglement". Una proprietà che permette di esprimere un grado di connessione più alto di quanto sia possibile fare in un qualsiasi altro sistema classico. Se un vettore, rappresentante uno stato quantistico puro, è prodotto tensoriale di altri due vettori, allora è separabile, sennò è correlato o "entangled". Fisicamente, si fa riferimento a quella proprietà che emerge quando un gruppo di particelle interagiscono in modo tale da creare un sistema condiviso per il quale non è più possibile descrivere le singole particelle separatamente e per cui esse si influenzano a vicenda, istantaneamente anche se sono distanti.
+
+\section{Operazioni sui qubit \label{sec:operazioni}}
+Le operazioni che si applicano ai sistemi devono essere lineari ed invertibili. Un'operazione è invertibile se tale operazione è bieetiva, quindi gli input e gli output sono in relazione uno-a-uno. Geometricamente, tali operazioni mappano un qualsiasi punto $p$ ad un qualsiasi altro punto $q$ sulla sfera di Bloch. Tali operazioni, che da qui in poi chiameremo porte, sono poi rappresentate tramite delle matrici di dimensione diversa, essa dipende dal numero dei qubit su cui agiscono. Nel modello quantistico, si prediligono porte piccole in modo da non rendere pesanti i calcoli.
+\subsection{Porte singole}
+Le porte, o gate, singole agiscono su qubit singoli e alcune delle matrici più importanti nel modello quantistico sono le matrici di Pauli: $X$, $Y$ e $Z$. Queste matrici corrispondono ad un'operazione di rotazione di $\pi$ radianti attorno a, rispettivamente, l'asse $x$, $y$ e $z$ e hanno la seguente forma:
+\begin{equation}
+  X =
+  \begin{bmatrix}
+    0 & 1\\
+    1 & 0
+  \end{bmatrix},
+  Y =
+  \begin{bmatrix}
+    0 & -i\\
+    i & 0
+  \end{bmatrix},
+  Z =
+  \begin{bmatrix}
+    1 & 0\\
+    0 & -1
+  \end{bmatrix}.
+\end{equation}
+Un'altra porta rilevante nel modello quantistico è la porta di Hadamard che permette di porre in sovrapposizione un qubit tramite una rotazione. Essa ha la seguente forma:
+\begin{equation}
+  H = \frac{1}{\sqrt{2}}\begin{bmatrix}
+    1 & 1\\
+    1 & -1
+  \end{bmatrix}
+\end{equation}
+\subsection{Porte controllate}
+Le porte controllate agiscono applicando una trasformazione a un qubit target solo se il qubit o i qubit di controllo si trovano in uno stato specifico. Queste tipo di porte sono fondamentali per porre in entanglement più qubit. Alcune delle porte più comuni sono le porte CNOT e di Toffoli. La porta CNOT applica l'operazione $X$ al qubit bersaglio se e solo se il qubit di controllo si trova nello stato $|1\rangle$. La porta di Toffoli è una porta che agisce su tre qubit, secondo lo stesso principio della porta CNOT, essa applica la porta $X$ al qubit target se e solo se gli altri due qubit di controllo si trovano nello stato $|1\rangle$.
+\subsection{Misure}
+Una misura è un tipo di operazione irreversibile e probabilistica che altera il sistema, in particolare, per un qubit, i valori $\alpha$ e $\beta$.
+Dato un vettore $a$, ogni valore assoluto dell'ampiezza del vettore elevato alla seconda, quindi $|a_k|^2$, fornisce la probabilità che il sistema, dopo una misura, si trovi nello stato associato all'ampiezza.
+
+\section{Algoritmi quantistici \label{sec:algoritmi}}
+Molti algoritmi quantistici analizzano ed interagiscono con una funzione $f(x)$ implementata in modo black-box da un oracolo denotato come $U_f$. Questo oracolo accetta un input ed esegue una funzione $f(x)$ che restituisce un output.
+\subsection{Oracoli booleani}
+Esistono varie forme di oracolo, una delle forme più comuni è l'oracolo booleano che è denotata come $U_f$. Questi tipi di oracolo eseguono la funzione $f(x)$, restituiscono un output booleano e sono descritti da un'evoluzione unitaria di questo tipo:
+\begin{equation}
+  U_f|x, \overline{0}\rangle = |x, f(x)\rangle
+\end{equation}
+\subsection{Phase kickback}
+Il phase kickback è un fenomeno per cui un'operazione quantistica controllata imprime una fase relativa al qubit o ai qubit di controllo invece di alterare lo stato dei qubit target. Il phase kickback rappresenta uno dei blocchi più importanti degli algoritmi quantistici. 
+\subsection{Oracoli di fase}
+\subsection{L'algoritmo di Grover}

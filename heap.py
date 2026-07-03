@@ -1,6 +1,8 @@
 from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.circuit import Gate
 from math import pi, sqrt
+from qiskit.circuit.library import PermutationGate
+import numpy as np
 
 
 def constructQuantumVector(v: list[int], d: int) -> QuantumCircuit:
@@ -15,17 +17,8 @@ def constructQuantumVector(v: list[int], d: int) -> QuantumCircuit:
     qc.add_register(qr)
     binaryString = '0'*(d-len(bin(v[i])[2:]))+bin(v[i])[2:]
     bitsSetToOne = [qr[j] for j in range(d) if binaryString[j] == '1']
-    qc.x(bitsSetToOne)
-
-  return qc
-
-
-def accessElementClassically(qc: QuantumCircuit, i: int, d: int) -> QuantumCircuit:
-  qr = QuantumRegister(d, 'access')
-  qc.add_register(qr)
-
-  for j in range(d):
-    qc.cx(i * d + j, qr[j])
+    if bitsSetToOne:
+      qc.x(bitsSetToOne)
 
   return qc
 
@@ -38,7 +31,7 @@ def selectAccess(values: list[int], bits: int, index: int | None = None, customQ
   qc = QuantumCircuit(qAddrReg, qValueReg)
 
   if (index):
-    binIndex: str = bin(index)[2:].zfill((len(values) - 1).bit_length())
+    binIndex: str = bin(index)[2:].zfill(bits)
     for i in range(len(binIndex)):
       if (binIndex[i] == '1'):
         qc.x(qAddrReg[i])
@@ -46,7 +39,7 @@ def selectAccess(values: list[int], bits: int, index: int | None = None, customQ
   binAddress: str
   binValue: str
   for i in range(len(values)):
-    binAddress = bin(i)[2:].zfill((len(values) - 1).bit_length())
+    binAddress = bin(i)[2:].zfill(bits)
     for j in range(len(binAddress)):
       if (binAddress[j] == '0'):
         qc.x(qAddrReg[j + addrStartIndex])
@@ -62,6 +55,41 @@ def selectAccess(values: list[int], bits: int, index: int | None = None, customQ
         qc.x(qAddrReg[j + addrStartIndex])
 
   return qc.to_gate()
+
+
+def quantum_rotation(n: int, s: int):
+  """
+  builds the rotation operator on `n` qubits by `s` positions
+  """
+  s %= n
+  qc = QuantumCircuit(n)
+
+  perm = [((k - s) % n) for k in range(n)]
+
+  qc.append(PermutationGate(perm), range(n))
+  return qc.decompose().to_gate(label=f"R_{s}")
+
+
+def quantum_character_rotation(n: int, char_size: int) -> QuantumCircuit:
+  """
+  builds the quantum circuit for the parametric rotation on characters of
+  size `char_size` qubits of `n` positions
+  """
+
+  l = int(np.ceil(np.log2(n)))
+
+  jr = QuantumRegister(l, "j")
+  qr = QuantumRegister(n * char_size, "q")
+  qc = QuantumCircuit(jr, qr)
+
+  for i in range(l):
+    controlled_rot = quantum_rotation(n, 2**i).control(1)
+
+    for bit in range(char_size):
+      lines = [qr[k * char_size + bit] for k in range(n)]
+      qc = qc.compose(controlled_rot, [jr[l-1-i], *lines])
+
+  return qc
 
 
 def leftChildCircuit(bits: int, customQAddrReg: QuantumRegister | None = None, customQRegValues: QuantumRegister | None = None, addrStartIndex: int = 0) -> Gate:
@@ -139,7 +167,7 @@ def propertyVerifier(vector: list[int], bits: int, cQAddrValues: QuantumRegister
       bits, qregs=[cQAddrValues, cQRegValues], firstValueStartIndex=bits * 3, secondValueStartIndex=bits * 3 + bits * 2, outIndex=bits * 3 + bits * 3 + 1), inplace=True)
 
   qc.ccx(cQRegValues[-3], cQRegValues[-2], cQRegValues[-1])
-  return qc.to_gate()
+  return qc
 
 
 def groverSearch(vector: list[int], bits: int,
@@ -162,7 +190,7 @@ def groverSearch(vector: list[int], bits: int,
   phase_kick = QuantumRegister(1, 'phase')
   qc = QuantumCircuit(cQAddrValues, cQRegValues, phase_kick)
 
-  search_qubits = list(cQAddrValues[1:bits])
+  search_qubits = list(cQAddrValues[2:bits])
   flag = cQRegValues[-1]
 
   qc.h(search_qubits)
@@ -172,7 +200,7 @@ def groverSearch(vector: list[int], bits: int,
 
   qc.barrier()
 
-  N = 2 ** (bits - 1)
+  N = 2 ** (bits - 2)
   iterations = int((pi / 4) * sqrt(N))
   pv = propertyVerifier(vector, bits, cQAddrValues, cQRegValues)
 
