@@ -1,0 +1,58 @@
+\chapter{Heap}
+\section{Introduzione}
+L'heap è una struttura dati basata sull'albero i cui nodi rispettano una particolare proprietà e condividono delle relazioni. Vi sono due tipi di heap: min heap e max heap. In questo capitolo verranno indagati i max heap, la loro rappresentazione e le procedure fondamentali che permettono di costruirli e mantenerli, in modo da fornire il termine di paragone classico per le versioni quantistiche di queste stesse operazioni, discusse nei capitoli successivi.
+
+Un max heap è un albero binario quasi completo, ossia un albero binario in cui ogni livello è completamente riempito ad eccezione, eventualmente, dell'ultimo, che viene riempito da sinistra verso destra. Questa struttura viene tipicamente rappresentata tramite un array $A$, dove ogni nodo dell'albero corrisponde ad un elemento dell'array e le relazioni di parentela tra i nodi sono espresse tramite semplici operazioni aritmetiche sugli indici, come verrà mostrato nella Sezione~\ref{sec:figli}.
+
+\section{Proprietà}
+Per tutti i nodi, ad eccezione della radice, è vero che:
+\begin{equation}
+  \text{A[Parent(i)]} \geq \text{A[i]}
+\end{equation}
+Questa relazione è detta proprietà di max heap: il valore contenuto in un nodo è sempre maggiore o uguale al valore dei suoi figli. Ne consegue, per transitività, che l'elemento massimo dell'intera struttura si trova sempre in corrispondenza della radice dell'albero, cioè in $A[0]$.
+
+Definiamo l'altezza di un nodo in un heap come la lunghezza del percorso discendente più lungo dal nodo ad una foglia. Si afferma perciò che l'altezza di un heap è uguale all'altezza della sua radice. Poiché l'heap è un albero binario quasi completo con $n$ nodi, la sua altezza è $\mathcal{O}(\log n)$; questa proprietà è cruciale, in quanto la maggior parte delle procedure fondamentali sull'heap (Sezione~\ref{sec:procedure}) opera seguendo un singolo cammino dalla radice ad una foglia (o viceversa), ottenendo così una complessità logaritmica rispetto al numero di elementi.
+
+\section{Figli \label{sec:figli}}
+È possibile computare la posizione di padre, figlio sinistro e destro di un nodo qualsiasi data la sua posizione $i$.
+\lstset{stringstyle=\ttfamily}
+\begin{lstlisting}[caption={Operazioni},label=lst:multicorrelation]
+Left(i)
+  return (i << 1)
+
+Right(i)
+  return (i << 1) | 1
+
+Parent(i)
+  return (i >> 1)
+\end{lstlisting}
+Indicizzando l'array $A$ a partire da $0$, queste operazioni permettono di navigare l'albero senza bisogno di puntatori espliciti: dato un nodo in posizione $i$, i suoi figli si trovano rispettivamente in posizione $2i + 1$ e $2i + 2$, mentre il padre si trova in posizione $\lfloor i/2 \rfloor - 1$.
+
+\section{Procedure \label{sec:procedure}}
+\subsection{Max-Heapify}
+La procedura Max-Heapify ha il compito di mantenere la proprietà di max heap. Riceve in input un array $A$ e un indice $i$ e assume che i sottoalberi radicati in $\text{Left}(i)$ e $\text{Right}(i)$ siano già degli heap validi, mentre $A[i]$ potrebbe violare la proprietà rispetto ai suoi figli. La procedura fa "scendere" il valore $A[i]$ lungo l'albero fino a ripristinare la proprietà di heap:
+\begin{lstlisting}[caption={Max-Heapify},label=lst:max-heapify,escapechar=|]
+Max-Heapify(A, i)
+  l = Left(i)
+  r = Right(i)
+  if l <= A.heap-size and A[l] > A[i]
+    largest = l
+  else
+    largest = i
+  if r <= A.heap-size and A[r] > A[largest]
+    largest = r
+  if largest != i
+    exchange A[i] with A[largest]
+    Max-Heapify(A, largest)
+\end{lstlisting}
+Ad ogni chiamata ricorsiva, il nodo scende di un livello lungo l'albero; poiché l'altezza dell'heap è $\mathcal{O}(\log n)$, la complessità di Max-Heapify è $\mathcal{O}(\log n)$.
+
+\subsection{Build-Max-Heap}
+La procedura Build-Max-Heap costruisce un max heap valido a partire da un array non ordinato, applicando Max-Heapify a tutti i nodi non foglia, procedendo dal basso verso l'alto:
+\begin{lstlisting}[caption={Build-Max-Heap},label=lst:build-max-heap]
+Build-Max-Heap(A)
+  A.heap-size = A.length
+  for i = floor(A.length / 2 - 1) downto 0
+    Max-Heapify(A, i)
+\end{lstlisting}
+Si osserva che, sebbene ogni chiamata a Max-Heapify costi $\mathcal{O}(\log n)$, il costo complessivo di Build-Max-Heap è $\mathcal{O}(n)$ e non $\mathcal{O}(n \log n)$: la maggior parte dei nodi si trova infatti nei livelli più bassi dell'albero, dove il costo di Max-Heapify è ridotto.

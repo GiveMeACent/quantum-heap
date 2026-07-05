@@ -2,7 +2,7 @@
 \section{Introduzione}
 Come già accennato, l'obiettivo è la costruzione e l'indagine della struttura dati Max Heap nel contesto della computazione quantistica. A tal fine, in questo capitolo vengono introdotti i concetti matematici e fisici necessari a comprendere il resto della trattazione.
 
-Nella Sezione~\ref{sec:richiami-algebra} si richiamano gli strumenti di algebra lineare (spazi di Hilbert, notazione di Dirac, operatori lineari e prodotto tensoriale) su cui si fonda il formalismo quantistico. Nella Sezione~\ref{sec:qubit} si introduce formalmente il qubit, la sua rappresentazione geometrica tramite la sfera di Bloch e i fenomeni di sovrapposizione e correlazione che ne caratterizzano il comportamento. Nella Sezione~\ref{sec:operazioni} si descrivono le operazioni che è possibile compiere sui qubit, distinguendo tra porte singole e porte controllate, che costituiscono i mattoni fondamentali di ogni circuito quantistico. Infine, nella Sezione~\ref{sec:algoritmi} questi strumenti vengono applicati alla descrizione dell'algoritmo di Grover, un esempio paradigmatico di algoritmo quantistico che offre gli strumenti concettuali utilizzati nel seguito della trattazione.
+Nella Sezione~\ref{sec:richiami-algebra} si richiamano gli strumenti di algebra lineare (spazi di Hilbert, notazione di Dirac, operatori lineari e prodotto tensoriale) su cui si fonda il formalismo quantistico. Nella Sezione~\ref{sec:qubit} si introduce formalmente il qubit, la sua rappresentazione geometrica tramite la sfera di Bloch e i fenomeni di sovrapposizione e correlazione che ne caratterizzano il comportamento. Nella Sezione~\ref{sec:operazioni} si descrivono le operazioni che è possibile compiere sui qubit, distinguendo tra porte singole e porte controllate, che costituiscono i mattoni fondamentali di ogni circuito quantistico. Infine, nella Sezione~\ref{sec:algoritmi} questi strumenti vengono applicati alla descrizione dell'algoritmo di Grover, un esempio di algoritmo quantistico che offre gli strumenti concettuali utilizzati nel seguito della trattazione.
 
 \section{Richiami di algebra \label{sec:richiami-algebra}}
 \subsection{Spazi di Hilbert}
@@ -71,10 +71,10 @@ All'interno di uno spazio di Hilbert, le matrici rappresentano delle operazioni 
 \begin{equation}
   M(a + b) = Ma + Mb.
 \end{equation}
-La matrice $I$ è la matrice identità. Una matrice $M$ è unitaria se $M^\dagger M = I$. $M$ è invertibile se esiste $N$ tale che $MN=NM=I$, in particolare, se M è unitaria, allora $N = M^\dagger M$.
+La matrice $I$ è la matrice identità. Una matrice $M$ è unitaria se $M^\dagger M = I$. $M$ è invertibile se esiste $N$ tale che $MN=NM=I$, in particolare, se M è unitaria, allora $N = M^\dagger$.
 
 \subsection{Prodotto tensoriale}
-Dati $\mathcal{H}$ e $\mathcal{K}$ due spazi di Hilbert di dimensione, rispettivamente, $n$ e $m$, il loro prodotto tensoriale, denotato come $\mathcal{H} \otimes \mathcal{K}$ è lo spazio di Hlbert che contiene tutte le combinazioni lineari di vettori della forma $v \otimes w$ con $v \in \mathcal{H}, w \in \mathcal{K}$. Il prodotto tensoriale gode delle proprietà di bilinearità e associatività. Inoltre, il vettore risultante $c = a \otimes b$ appartenente allo spazio $\mathcal{H} \otimes \mathcal{K}$ ha dimensione $n \times m$ e per qualsiasi $(i, j), i \in [0, n - 1], j \in [0, m - 1]$ si ha $c(ij) = a(i)b(j)$.
+Dati $\mathcal{H}$ e $\mathcal{K}$ due spazi di Hilbert di dimensione, rispettivamente, $n$ e $m$, il loro prodotto tensoriale, denotato come $\mathcal{H} \otimes \mathcal{K}$ è lo spazio di Hilbert che contiene tutte le combinazioni lineari di vettori della forma $v \otimes w$ con $v \in \mathcal{H}, w \in \mathcal{K}$. Il prodotto tensoriale gode delle proprietà di bilinearità e associatività. Inoltre, il vettore risultante $c = a \otimes b$ appartenente allo spazio $\mathcal{H} \otimes \mathcal{K}$ ha dimensione $n \times m$ e per qualsiasi $(i, j), i \in [0, n - 1], j \in [0, m - 1]$ si ha $c(ij) = a(i)b(j)$.
 
 \section{Il qubit \label{sec:qubit}}
 \subsection{Lo spazio e gli stati}
@@ -115,7 +115,7 @@ Il primo fenomeno fondamentale della meccanica quantistica è quello della sovra
 Il secondo fenomeno fondamentale della meccanica quantistica è quello della correlazione o "entanglement". Una proprietà che permette di esprimere un grado di connessione più alto di quanto sia possibile fare in un qualsiasi altro sistema classico. Se un vettore, rappresentante uno stato quantistico puro, è prodotto tensoriale di altri due vettori, allora è separabile, sennò è correlato o "entangled". Fisicamente, si fa riferimento a quella proprietà che emerge quando un gruppo di particelle interagiscono in modo tale da creare un sistema condiviso per il quale non è più possibile descrivere le singole particelle separatamente e per cui esse si influenzano a vicenda, istantaneamente anche se sono distanti.
 
 \section{Operazioni sui qubit \label{sec:operazioni}}
-Le operazioni che si applicano ai sistemi devono essere lineari ed invertibili. Un'operazione è invertibile se tale operazione è bieetiva, quindi gli input e gli output sono in relazione uno-a-uno. Geometricamente, tali operazioni mappano un qualsiasi punto $p$ ad un qualsiasi altro punto $q$ sulla sfera di Bloch. Tali operazioni, che da qui in poi chiameremo porte, sono poi rappresentate tramite delle matrici di dimensione diversa, essa dipende dal numero dei qubit su cui agiscono. Nel modello quantistico, si prediligono porte piccole in modo da non rendere pesanti i calcoli.
+Le operazioni che si applicano ai sistemi devono essere lineari ed invertibili. Un'operazione è invertibile se tale operazione è biettiva, quindi gli input e gli output sono in relazione uno-a-uno. Geometricamente, tali operazioni mappano un qualsiasi punto $p$ ad un qualsiasi altro punto $q$ sulla sfera di Bloch. Tali operazioni, che da qui in poi chiameremo porte, sono poi rappresentate tramite delle matrici di dimensione diversa, essa dipende dal numero dei qubit su cui agiscono. Nel modello quantistico, si prediligono porte piccole in modo da non rendere pesanti i calcoli.
 \subsection{Porte singole}
 Le porte, o gate, singole agiscono su qubit singoli e alcune delle matrici più importanti nel modello quantistico sono le matrici di Pauli: $X$, $Y$ e $Z$. Queste matrici corrispondono ad un'operazione di rotazione di $\pi$ radianti attorno a, rispettivamente, l'asse $x$, $y$ e $z$ e hanno la seguente forma:
 \begin{equation}
@@ -143,7 +143,7 @@ Un'altra porta rilevante nel modello quantistico è la porta di Hadamard che per
   \end{bmatrix}
 \end{equation}
 \subsection{Porte controllate}
-Le porte controllate agiscono applicando una trasformazione a un qubit target solo se il qubit o i qubit di controllo si trovano in uno stato specifico. Queste tipo di porte sono fondamentali per porre in entanglement più qubit. Alcune delle porte più comuni sono le porte CNOT e di Toffoli. La porta CNOT applica l'operazione $X$ al qubit bersaglio se e solo se il qubit di controllo si trova nello stato $|1\rangle$. La porta di Toffoli è una porta che agisce su tre qubit, secondo lo stesso principio della porta CNOT, essa applica la porta $X$ al qubit target se e solo se gli altri due qubit di controllo si trovano nello stato $|1\rangle$.
+Le porte controllate agiscono applicando una trasformazione a un qubit target solo se il qubit o i qubit di controllo si trovano in uno stato specifico. Questo tipo di porte sono fondamentali per porre in entanglement più qubit. Alcune delle porte più comuni sono le porte CNOT e di Toffoli. La porta CNOT applica l'operazione $X$ al qubit bersaglio se e solo se il qubit di controllo si trova nello stato $|1\rangle$. La porta di Toffoli è una porta che agisce su tre qubit, secondo lo stesso principio della porta CNOT, essa applica la porta $X$ al qubit target se e solo se gli altri due qubit di controllo si trovano nello stato $|1\rangle$.
 \subsection{Misure}
 Una misura è un tipo di operazione irreversibile e probabilistica che altera il sistema, in particolare, per un qubit, i valori $\alpha$ e $\beta$.
 Dato un vettore $a$, ogni valore assoluto dell'ampiezza del vettore elevato alla seconda, quindi $|a_k|^2$, fornisce la probabilità che il sistema, dopo una misura, si trovi nello stato associato all'ampiezza.
@@ -156,6 +156,52 @@ Esistono varie forme di oracolo, una delle forme più comuni è l'oracolo boolea
   U_f|x, \overline{0}\rangle = |x, f(x)\rangle
 \end{equation}
 \subsection{Phase kickback}
-Il phase kickback è un fenomeno per cui un'operazione quantistica controllata imprime una fase relativa al qubit o ai qubit di controllo invece di alterare lo stato dei qubit target. Il phase kickback rappresenta uno dei blocchi più importanti degli algoritmi quantistici. 
+Il phase kickback è un fenomeno per cui un'operazione quantistica controllata imprime una fase relativa al qubit o ai qubit di controllo invece di alterare lo stato dei qubit target. Il phase kickback rappresenta uno dei blocchi più importanti degli algoritmi quantistici. Un esempio dell'avvenimento di questo fenomeno è l'applicazione della porta CNOT allo stato $|+-\rangle$ con primo qubit controllo e secondo qubit target. Si ha che:
+\begin{equation}
+  CNOT|+-\rangle = |--\rangle
+\end{equation}
+Come si può osservare, il cambiamento è avvenuto sul qubit di controllo e non sul qubit di target.
 \subsection{Oracoli di fase}
+Un'altra delle forme più comuni di un oracolo è l'oracolo di fase, denotato con $P_f$ e descritto dalla seguente evoluzione unitaria:
+\begin{equation}
+P_f|x\rangle = (-1)^{f(x)}|x\rangle
+\end{equation}
+Passare da un oracolo booleano ad un oracolo di fase è relativamente semplice, basta infatti porre nello stato $|-\rangle$ il registro di output.
 \subsection{L'algoritmo di Grover}
+L'algoritmo di Grover risolve il problema della ricerca non strutturata: data una funzione booleana $f : \{0, 1\}^n \to \{0, 1\}$ implementata da un oracolo, l'obiettivo è trovare un elemento $x^*$ tale che $f(x^*) = 1$. Supponiamo che, su $N = 2^n$ possibili input, esista un unico elemento marcato $x^*$ per cui $f(x^*) = 1$, mentre $f(x) = 0$ per ogni $x \neq x^*$. Un algoritmo classico richiede, nel caso peggiore, $O(N)$ interrogazioni dell'oracolo per trovare $x^*$; l'algoritmo di Grover risolve lo stesso problema con $\mathcal{O}(\sqrt{N})$ interrogazioni, fornendo un vantaggio quadratico.
+\subsubsection{Inizializzazione}
+L'algoritmo opera su un registro di $n$ qubit, inizializzato nello stato $|0\rangle^{\otimes n}$. Applicando la porta di Hadamard a ciascun qubit si ottiene una sovrapposizione uniforme di tutti i possibili stati della base computazionale:
+\begin{equation}
+  |s\rangle = H^{\otimes n}|0\rangle^{\otimes n} = \frac{1}{\sqrt{N}}\sum_{x = 0}^{N - 1}|x\rangle.
+\end{equation}
+In questo stato, ogni elemento ha la stessa ampiezza $1/\sqrt{N}$ e quindi la stessa probabilità $1/N$ di essere osservato con una misura.
+\subsubsection{L'iterata di Grover}
+Il cuore dell'algoritmo è l'applicazione ripetuta di un operatore $G$, detto iterata di Grover, composto da due operazioni:
+\begin{equation}
+  G = D \, P_f,
+\end{equation}
+dove $P_f$ è l'oracolo di fase che marca lo stato soluzione invertendone il segno:
+\begin{equation}
+  P_f|x\rangle = (-1)^{f(x)}|x\rangle,
+\end{equation}
+e $D$ è l'operatore di diffusione, definito come:
+\begin{equation}
+  D = 2|s\rangle\langle s| - I.
+\end{equation}
+L'operatore $D$ realizza una riflessione rispetto allo stato medio $|s\rangle$ e viene detto anche "inversione rispetto alla media", poiché la sua azione su un generico stato $|\psi\rangle = \sum_x \psi_x |x\rangle$ trasforma ogni ampiezza $\psi_x$ nella sua riflessione rispetto alla media $\bar{\psi}$ delle ampiezze:
+\begin{equation}
+  \psi_x \; \longmapsto \; 2\bar{\psi} - \psi_x.
+\end{equation}
+Nella pratica, $D$ si implementa come $D = H^{\otimes n}(2|0\rangle\langle 0| - I)H^{\otimes n}$, utilizzando solamente porte di Hadamard e una riflessione rispetto allo stato $|0\rangle^{\otimes n}$, quest'ultima realizzabile tramite porte controllate multiple.
+\subsubsection{Interpretazione geometrica}
+L'azione dell'iterata di Grover si comprende intuitivamente considerando il sottospazio bidimensionale generato dallo stato marcato $|x^*\rangle$ e dallo stato $|u\rangle$, sovrapposizione uniforme di tutti gli stati non marcati. Lo stato iniziale $|s\rangle$ si può scrivere come combinazione di questi due vettori:
+\begin{equation}
+  |s\rangle = \cos{\frac{\theta}{2}}|u\rangle + \sin{\frac{\theta}{2}}|x^*\rangle, \qquad \text{con } \sin{\frac{\theta}{2}} = \frac{1}{\sqrt{N}}.
+\end{equation}
+Sia $P_f$ che $D$ agiscono come riflessioni all'interno di questo sottospazio: $P_f$ riflette rispetto a $|u\rangle$, mentre $D$ riflette rispetto a $|s\rangle$. La composizione di due riflessioni è una rotazione, dunque ogni applicazione di $G$ ruota lo stato di un angolo $\theta$ verso lo stato marcato $|x^*\rangle$. Applicando $G$ un numero $R$ di volte, lo stato si allontana progressivamente da $|u\rangle$ avvicinandosi a $|x^*\rangle$.
+\subsubsection{Numero di iterazioni}
+Poiché $\theta$ è piccolo per $N$ grande, si può approssimare $\theta \approx 2/\sqrt{N}$. L'obiettivo è ruotare lo stato di un angolo vicino a $\pi/2$, in modo che la probabilità di misurare $|x^*\rangle$ sia massima; il numero ottimale di iterazioni è quindi:
+\begin{equation}
+  R \approx \left\lfloor \frac{\pi}{4}\sqrt{N} \right\rfloor.
+\end{equation}
+Dopo $R$ iterazioni, una misura del registro restituisce lo stato $|x^*\rangle$ con probabilità $1 - O(1/N)$, confermando il vantaggio quadratico rispetto alla ricerca classica. Se gli elementi marcati sono $M > 1$ anziché uno solo, la relazione precedente si generalizza a $\sin(\theta/2) = \sqrt{M/N}$ e il numero ottimale di iterazioni diventa $R \approx \frac{\pi}{4}\sqrt{N/M}$.

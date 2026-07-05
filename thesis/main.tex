@@ -5,7 +5,7 @@
 \usepackage[italian]{babel}
 
 
-\usepackage[utf8x]{inputenc} %Linux
+\usepackage[utf8x]{inputenc}
 
 \usepackage{graphicx}
 \usepackage[font=small,labelfont=bf,tableposition=top]{caption}
@@ -44,8 +44,8 @@ footskip=.25in]{geometry}
  \addto\captionsitalian{%
  	\renewcommand{\lstlistingname}{Codice}}
 \newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
-\setcounter{tocdepth}{3} % fa apparire le subsubsection nell'indice
-\setcounter{secnumdepth}{3} % e le numera
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
 
 
 \usepackage{amsmath}
@@ -56,9 +56,8 @@ footskip=.25in]{geometry}
 
 \begin{document}
 
-%Inserisce qui il frontespizio
-%\newgeometry{left=3cm}
-\input{parts/frontespizio} %<- richiama il file "parts/titlepage.tex" che contiene il frontespizio
+
+\input{parts/frontespizio}
 
 \bibliographystyle{unsrt}
 \title{Max Heap}
@@ -68,21 +67,17 @@ footskip=.25in]{geometry}
 
 \newgeometry{left=4cm}
 \spacing{1.5}
-%Inserisce qui l'abstract
 \input{parts/abstract}
 
 \spacing{1.0}
-%Genera l'indice
 \tableofcontents
 
 \spacing{1.5}
 
-\input{parts/capitolo1} %<- richiama il file "parts/capitolo1.tex" che contiene il primo capitolo
-%Si consiglia di creare un nuovo file per ogni capitolo
+\input{parts/capitolo1}
+\input{parts/capitolo2}
+\input{parts/conclusione}
 
-\input{parts/conclusione} %<- richiama il file "parts/conclusione.tex" che contiene la conclusione
-
-%Inserisce la bibliografia
 \newpage
 \addcontentsline{toc}{chapter}{Bibliografia}
 \bibliography{bibliography}
