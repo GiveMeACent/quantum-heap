@@ -1,4 +1,124 @@
-\chapter{Quantum Max Heap}
+\chapter{Quantum max-heap}
 \section{Introduzione}
+L'obiettivo di questo capitolo è tradurre in termini quantistici la struttura dati max-heap introdotta nel Capitolo~\ref{ch:heap}, costruendo i circuiti necessari a rappresentarne i dati, a navigarne la struttura e a verificarne la proprietà fondamentale, per poi sfruttare tali circuiti all'interno dell'algoritmo di Grover (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:algoritmi}) al fine di individuare eventuali nodi che violano la proprietà.
 
-\section{}
+Nella Sezione~\ref{sec:forma-codifica} si discute la scelta della forma e della codifica dei dati, motivando l'adozione di una rappresentazione classica codificata in qubit e distinguendo tra codifica in forma circuitale e codifica in forma di bit. Nella Sezione~\ref{sec:primitive-accesso} si introducono le primitive di accesso ai dati, formalizzate come oracolo e come gate, e se ne descrive la realizzazione per entrambe le forme di codifica individuate. Nella Sezione~\ref{sec:calcolo-figli} si presentano i circuiti che calcolano l'indirizzo dei figli di un nodo a partire dal proprio indirizzo, mentre nella Sezione~\ref{sec:disuguaglianza} si costruisce un circuito di confronto in grado di stabilire quale, tra due valori codificati quantisticamente, sia il maggiore. Nella Sezione~\ref{sec:verifica-proprieta} questi circuiti vengono composti per ottenere un circuito che verifichi, per un dato nodo, se la proprietà di max-heap sia rispettata rispetto ai suoi figli. Infine, nella Sezione~\ref{sec:ricerca-violazioni} si applica l'algoritmo di Grover al circuito di verifica, ponendo in sovrapposizione i qubit di indirizzo dei nodi interni, in modo da amplificare la probabilità di individuare, con una singola misura, un nodo che violi la proprietà.
+
+\section{Forma e codifica dei dati \label{sec:forma-codifica}}
+Innanzitutto, la prima scelta verte sulla forma che i dati devono avere: essi devono avere forma classica o quantistica? La risposta a questa domanda deriva dall'applicabilità della proprietà max-heap: è difatti impossibile definire un ordinamento totale che sia compatibile con le proprietà di un qubit. La proprietà di max-heap, infatti, richiede che per ogni coppia di nodi sia sempre possibile stabilire in modo univoco quale dei due valori sia maggiore o uguale all'altro (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:proprieta}). Lo stato di un qubit, tuttavia, è una sovrapposizione di ampiezze complesse (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:qubit}) e l'unico modo per accedere a un valore osservabile è tramite una misura, la quale altera irreversibilmente lo stato e ne restituisce un risultato probabilistico. Non esiste quindi un criterio stabile e ripetibile per confrontare due qubit generici, ragion per cui la proprietà di max-heap non può essere definita direttamente su dati in forma quantistica. Si deve dunque scegliere di codificare dei dati di forma classica. Inoltre, data la natura dei qubit, si sceglierà di codificare i dati in linguaggio numerico binario. La seconda scelta verte sulla codifica dei dati, in questa trattazione, si individuano due modi per codificare i dati.
+
+\subsection{Dati codificati in forma circuitale \label{sec:forma-circuitale}}
+Il primo modo consiste nel codificare i dati all'interno di un circuito e cioè "hardcodarli" all'interno di un oracolo che è possibile interrogare, questo approccio è conosciuto in letteratura come "Quantum Read-Only Memory" (QROM), una struttura dati designata a caricare dati classici in un computer quantistico. Un tale tipo di struttura, tuttavia, è immutabile, ossia non permette né la modifica di dati già esistenti né l'inserimento di nuovi dati.
+
+\subsection{Dati codificati in forma di bit \label{sec:forma-bit}}
+Il secondo modo consiste nell'inizializzare opportunamente ogni qubit ed utilizzando il gate $X$ per rappresentare i bit a valore uno. In questo modo è possibile aggiungere e modificare i dati.
+
+I due approcci comportano dunque un compromesso opposto: la codifica in forma circuitale (Sezione~\ref{sec:forma-circuitale}) produce un oracolo compatto ed efficiente da interrogare, ma rigido, poiché ogni modifica ai dati richiede la costruzione di un nuovo circuito; la codifica in forma di bit (Sezione~\ref{sec:forma-bit}) è invece pienamente dinamica, al costo di richiedere delle operazioni più profonde per interrogare la struttura. In questa trattazione si esploreranno entrambi gli approcci.
+\section{Primitive di accesso \label{sec:primitive-accesso}}
+Si discute adesso della creazione di una primitiva che permetta di accedere ai dati. Si vorrebbe poter specificare l'indirizzo del dato a cui accedere e poter ritrovare il risultato dell'accesso in una posizione ben definita. Formalmente, indicando con $A$ l'array che rappresenta l'heap (Capitolo~\ref{ch:heap}), la primitiva di accesso è un oracolo $U_A$ che agisce secondo la seguente evoluzione unitaria:
+\begin{equation}
+  U_A|i\rangle|0\rangle^{\otimes m} = |i\rangle|A[i]\rangle,
+\end{equation}
+dove il registro $|i\rangle$ codifica l'indirizzo del dato richiesto e il registro inizialmente posto a $|0\rangle^{\otimes m}$ viene sostituito, a seguito dell'operazione, dal valore $A[i]$ memorizzato in quella posizione.
+
+Per utilizzare una qualsiasi primitiva sono necessari $n$ qubit per la codifica dell'indirizzo e $m$ qubit per memorizzare il risultato. In particolare, se $N$ è il numero di elementi presenti nell'heap, il registro indirizzo deve poter rappresentare ciascuno degli $N$ possibili indici, per cui:
+\begin{equation}
+  n = \lceil \log_2 N \rceil.
+\end{equation}
+Il numero di qubit $m$ necessari al registro di output dipende invece dalla larghezza in bit del singolo valore memorizzato, e quindi, in ultima analisi, dalla scelta della codifica dei dati discussa nella Sezione~\ref{sec:forma-codifica}. La primitiva di accesso cambia infatti in base a come si codificano i dati, e nel seguito se ne discuteranno entrambe le forme.
+\subsection{Forma circuitale}
+In forma circuitale, la primitiva di accesso coincide con il circuito stesso in cui sono codificati i dati. Il circuito è costruito ripetendo, per ogni indirizzo binario $B \in \{0, \dots, N-1\}$, la stessa sequenza di tre passi.
+
+Innanzitutto, per ogni bit $i$-esimo di $B$ uguale a $0$, si applica un gate $X$ al corrispondente qubit del registro di indirizzo. Se il registro di indirizzo, indicato con $I$, si trova effettivamente nello stato $|B\rangle$, questa operazione lo porta nello stato $|1\rangle^{\otimes n}$:
+\begin{equation}
+  \begin{cases}
+    I[i] = 0 & \text{se } B[i] = 1 \\
+    I[i] = 1 & \text{se } B[i] = 0
+  \end{cases}
+  \quad \Longrightarrow \quad
+  I[i] = 1 \; \forall i.
+\end{equation}
+
+Fatto ciò, per ogni bit $j$-esimo del valore $V = A[B]$ uguale a $1$, si applica un gate di Toffoli generalizzato (multi-controllato), avente come controlli tutti i qubit del registro di indirizzo e come bersaglio il qubit $j$-esimo del registro di output. Poiché tutti i qubit del registro di indirizzo fungono da controllo, questo gate si attiva soltanto se il registro si trova effettivamente nello stato $|1\rangle^{\otimes n}$, cioè soltanto se l'indirizzo originariamente richiesto era proprio $B$.
+
+Infine, gli stessi gate $X$ applicati inizialmente vengono riapplicati, cosicché il registro di indirizzo torni al proprio stato originale, senza lasciare informazione residua.
+
+Applicato in questo modo, questo procedimento richiede un numero di gate multi-controllati proporzionale a $N \cdot m$.
+
+\subsection{Forma di bit}
+In forma di bit, la primitiva di accesso viene costruita tramite delle rotazioni. Si rappresentino i dati come $N$ elementi $q_0, q_1, \dots, q_{N-1}$, ciascuno codificato su $m$ qubit, disposti in un unico registro di $N \cdot m$ qubit. Si definisca l'operatore di rotazione ciclica $R_s$, che trasla ciclicamente di $s$ posizioni gli $N$ elementi del registro:
+\begin{equation}
+  R_s |q_0, q_1, \dots, q_{N - 1}\rangle = |q_{-s \bmod N}, q_{1 - s \bmod N}, \dots, q_{N - 1 - s \bmod N}\rangle.
+\end{equation}
+Sfruttando la decomposizione binaria di un generico indirizzo $j = \sum_{i=0}^{n-1} j_i 2^i$, con $j_i \in \{0, 1\}$ ed $n = \lceil \log_2 N \rceil$ qubit di indirizzo, è possibile costruire l'operatore di rotazione parametrico $R_j$ come composizione di $n$ rotazioni controllate, ciascuna di ampiezza pari a una potenza di due:
+\begin{equation}
+  R_j = \prod_{i = 0}^{n - 1} C_{j_i}\left(R_{2^i}\right),
+\end{equation}
+dove $C_{j_i}(R_{2^i})$ denota la rotazione $R_{2^i}$ applicata in modo controllato dal qubit $i$-esimo del registro indirizzo $|j\rangle$. Poiché ogni bit del registro indirizzo controlla una rotazione di ampiezza distinta, questa costruzione realizza coerentemente, per ogni ramo della sovrapposizione di $|j\rangle$, la rotazione corrispondente al valore di $j$ codificato in quel ramo. Va inoltre notato che, essendo ogni elemento codificato su $m$ qubit, ciascuna rotazione controllata deve essere applicata separatamente a ciascuno degli $m$ "piani" di qubit che compongono gli elementi, agendo in parallelo sul qubit $b$-esimo di ogni elemento, per $b = 0, \dots, m-1$.
+
+Applicando $R_j$ (o il suo inverso, a seconda della convenzione scelta), l'elemento $A[j]$ viene portato in una posizione di riferimento fissa del registro, ad esempio la posizione $0$, rendendolo così accessibile tramite semplici gate locali, non controllati, sia in lettura sia in scrittura; la rotazione inversa $R_j^\dagger$ riporta poi ogni elemento alla propria posizione originale. Rispetto alla codifica in forma circuitale, questo approccio richiede solamente $n = \lceil \log_2 N \rceil$ stadi di rotazione controllata anziché un numero di gate proporzionale a $N$, sebbene ciascuna rotazione agisca potenzialmente su tutti gli $N$ elementi, per cui la profondità complessiva del circuito resta significativa.
+\section{Calcolo delle posizioni dei figli \label{sec:calcolo-figli}}
+Per poter navigare la struttura heap (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:figli}) sono necessari due circuiti che, dato il registro di indirizzo $|i\rangle$ di un nodo, ne calcolino l'indirizzo del figlio sinistro e del figlio destro. Analogamente alla primitiva di accesso (Sezione~\ref{sec:primitive-accesso}), questi circuiti scrivono il risultato in un registro di output ausiliario, inizialmente posto a $|0\rangle^{\otimes n}$, lasciando inalterato il registro di indirizzo:
+\begin{equation}
+  U_L |i\rangle |0\rangle^{\otimes n} = |i\rangle |\text{Left}(i)\rangle, \qquad U_R |i\rangle |0\rangle^{\otimes n} = |i\rangle |\text{Right}(i)\rangle.
+\end{equation}
+
+Il circuito $U_L$ opera come segue: per ciascun qubit dell'indirizzo, ad eccezione del primo, un gate CNOT copia il valore del qubit $k$-esimo del registro indirizzo nel qubit $(k-1)$-esimo del registro di output, realizzando uno scorrimento (shift) dell'indirizzo verso il registro di destinazione. Il qubit del registro indirizzo di indice $0$ non viene mai utilizzato come controllo e non influenza dunque il risultato. Infine, l'ultimo qubit del registro di output viene posto a $1$ tramite un gate $X$.
+
+Il circuito $U_R$ condivide con $U_L$ esattamente lo stesso scorrimento iniziale; tuttavia, anziché fissare l'ultimo qubit del registro di output a $1$, applica sui restanti qubit del registro di output una cascata di gate $X$ e Toffoli generalizzati (multi-controllati), che realizza un incremento di $1$ sul valore ottenuto dallo scorrimento, secondo la tecnica standard di costruzione di un incrementatore reversibile a propagazione di riporto. Il risultato di questa costruzione è che, per ogni indirizzo $i$, vale sempre la relazione:
+\begin{equation}
+  \text{Right}(i) = \text{Left}(i) + 1,
+\end{equation}
+coerentemente con quanto già osservato nel Capitolo~\ref{ch:heap} (Sezione~\ref{sec:figli}), dove $\text{Right}(i)$ è definito come $\text{Left}(i)$ incrementato dell'ultimo bit posto a $1$.
+
+\section{Relazione di disuguaglianza \label{sec:disuguaglianza}}
+Per ristabilire la proprietà di max-heap (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:proprieta}) su dati codificati quantisticamente è necessario un circuito che realizzi il confronto $\geq$ tra due valori. A tal fine si costruisce un oracolo di confronto $C_>$ che, dati due registri $|x\rangle, |y\rangle$ di $n$ qubit e un qubit di output inizialmente a $|0\rangle$, calcola:
+\begin{equation}
+  C_> |x\rangle |y\rangle |0\rangle = |x\rangle |y\rangle \left| [x > y] \right\rangle,
+\end{equation}
+dove $[x > y]$ vale $1$ se $x > y$ e $0$ altrimenti, lasciando invariati entrambi i registri di input.
+
+Il circuito confronta i due valori bit a bit, procedendo dal qubit più significativo verso quello meno significativo. Ad ogni posizione $k$, si verifica se il bit $k$-esimo di $x$ vale $1$ e il corrispondente bit di $y$ vale $0$, condizionatamente al fatto che tutti i bit più significativi già esaminati risultino uguali tra loro; in tal caso il qubit di output viene posto a $1$. L'informazione su quali bit più significativi siano stati finora uguali viene mantenuta temporaneamente sovrascrivendo il registro $|y\rangle$ stesso, evitando così l'uso di qubit ausiliari aggiuntivi oltre a quello di output: per ogni posizione, se il bit di $x$ e quello di $y$ coincidono, il qubit di $y$ viene aggiornato a $1$, altrimenti a $0$, fungendo da indicatore di uguaglianza da riutilizzare nel confronto della posizione successiva. Una volta terminato il confronto, una seconda cascata di gate ripristina il registro $|y\rangle$ al proprio valore originale, invertendo la codifica temporanea introdotta durante il confronto.
+\section{Verifica della proprietà \label{sec:verifica-proprieta}}
+Sulla base dei circuiti introdotti nelle sezioni precedenti, è possibile costruire un circuito che verifichi, per un dato indirizzo $i$, se la proprietà di max heap (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:proprieta}) sia rispettata rispetto ai figli del nodo in posizione $i$.
+
+Il circuito opera su due registri: un registro di indirizzi, suddiviso in tre blocchi da $n$ qubit ciascuno, rispettivamente per l'indirizzo del nodo $i$, quello del figlio sinistro e quello del figlio destro, e un registro di valori, suddiviso in tre blocchi da $m$ qubit per i valori corrispondenti, seguiti da tre qubit ausiliari. Il circuito procede nei seguenti passi:
+\begin{enumerate}
+  \item I circuiti $U_L$ e $U_R$ (Sezione~\ref{sec:calcolo-figli}) vengono applicati per calcolare $\text{Left}(i)$ e $\text{Right}(i)$, scrivendo i risultati rispettivamente nel secondo e nel terzo blocco del registro di indirizzi.
+  \item L'oracolo di accesso $U_A$ (Sezione~\ref{sec:primitive-accesso}) viene applicato tre volte, una per ciascun blocco del registro di indirizzi, caricando rispettivamente $A[i]$, $A[\text{Left}(i)]$ e $A[\text{Right}(i)]$ nei tre blocchi del registro di valori.
+  \item Il comparatore $C_>$ (Sezione~\ref{sec:disuguaglianza}) viene applicato due volte: la prima confronta il valore del nodo $i$ con quello del figlio sinistro, scrivendo il risultato nel primo qubit ausiliario; la seconda confronta il valore del nodo $i$ con quello del figlio destro, scrivendo il risultato nel secondo qubit ausiliario.
+  \item Un gate Toffoli, avente come controlli i due qubit ausiliari appena calcolati, pone il terzo e ultimo qubit ausiliario a $1$ se e solo se entrambi i confronti hanno avuto esito positivo.
+\end{enumerate}
+
+Complessivamente, indicando con $f_L = [A[i] > A[\text{Left}(i)]]$ e $f_R = [A[i] > A[\text{Right}(i)]]$ i due risultati intermedi dei confronti, il circuito realizza l'evoluzione unitaria:
+\begin{equation}
+  \begin{split}
+    &V |i\rangle |0\rangle^{\otimes(\ldots)} = \\
+    &|i\rangle\, |\text{Left}(i)\rangle\, |\text{Right}(i)\rangle\, |A[i]\rangle\, |A[\text{Left}(i)]\rangle\, |A[\text{Right}(i)]\rangle\, |f_L\rangle\, |f_R\rangle\, |f_L \wedge f_R\rangle\,
+  \end{split}
+\end{equation}
+dove l'ultimo qubit indica se il nodo $i$ rispetta la proprietà di max heap rispetto a entrambi i figli.
+\section{Ricerca delle violazioni \label{sec:ricerca-violazioni}}
+Disponendo dei circuiti costruiti fino ad ora, ci si chiede se sia possibile sfruttare le proprietà di sovrapposizione e correlazione per velocizzare la ricerca di eventuali violazioni della proprietà di max-heap. In questo paragrafo si indaga come individuare tali violazioni ponendo in sovrapposizione alcuni qubit dell'indirizzo, per poi applicare l'algoritmo di Grover (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:algoritmi}) al fine di amplificare la probabilità di osservare, con una misura, un nodo che viola la proprietà.
+
+Si supponga di possedere un heap completo rappresentato da $A = [a_0, a_1, \\\dots, a_{n-1}]$ (Capitolo~\ref{ch:heap}), con $n = 2^k - 1$ per un certo $k$. Rappresentare gli indici da $0$ a $n-1$ richiede esattamente $k$ qubit. Si devono innanzitutto individuare tutte le posizioni dei nodi che possiedono figli. Data la forma della struttura, i nodi interni hanno indice compreso tra $0$ e $\lfloor n/2 \rfloor - 1 = 2^{k-1}-2$, mentre le foglie occupano le restanti $\lceil n/2 \rceil$ posizioni. Il qubit più significativo dell'indirizzo permette di distinguere tra la prima e la seconda metà dello spazio degli indirizzi: ponendolo a $0$, ci si restringe alla prima metà, che contiene tutti i nodi interni.
+
+Fissare un solo qubit non è tuttavia sufficiente. Si consideri infatti l'ultimo nodo tra quelli così individuati, il cui indirizzo, tra quelli considerati, è quello con tutti i restanti bit posti a $1$: pur trattandosi in realtà di una foglia (essendo appena fuori dall'intervallo dei nodi interni sopra individuato), applicando comunque i circuiti $U_L$ e $U_R$ della Sezione~\ref{sec:calcolo-figli} si ottengono, per i suoi presunti figli, rispettivamente il valore $2^k - 1$ (tutti $1$) e il valore $2^k$ (un $1$ seguito da $k$ zeri). Quest'ultimo richiederebbe $k+1$ qubit per essere rappresentato correttamente, ma il registro di indirizzo dispone di soli $k$ qubit: il risultato viene dunque troncato a $0$, un indirizzo già associato a un altro nodo della struttura, producendo una collisione spuria tra due indirizzi concettualmente distinti.
+
+Per risolvere il problema, si espande artificialmente lo spazio degli indirizzi con un qubit aggiuntivo rispetto ai $k$ strettamente necessari, qubit che rimane sempre fissato a $|0\rangle$. In questo modo, gli indirizzi $2^k - 1$ e $2^k$ coesistono come indirizzi distinti all'interno dello spazio esteso, senza che si verifichi alcun troncamento: il secondo, semplicemente, non corrisponde ad alcun elemento reale dell'array, e l'oracolo di accesso $U_A$ (Sezione~\ref{sec:primitive-accesso}), interrogato su tale indirizzo, restituisce per costruzione il valore $0$. Poiché i valori reali memorizzati nell'array sono positivi, questo garantisce che il confronto con un simile indirizzo "vuoto" non venga mai segnalato come violazione della proprietà.
+
+Complessivamente, sul registro di indirizzo esteso a $k+1$ qubit, se ne fissano dunque due a $|0\rangle$: il qubit aggiunto per l'espansione dello spazio, appena descritto, e il qubit che isola i nodi interni dalle foglie. I restanti $k - 1$ qubit vengono posti in sovrapposizione tramite porte di Hadamard, definendo uno spazio di ricerca di dimensione $N = 2^{k - 1}$.
+
+Fornendo questo indirizzo, con i qubit rimanenti in sovrapposizione, ai circuiti introdotti nelle sezioni precedenti (calcolo dei figli, accesso ai valori, verifica della proprietà), si ottengono, tra i possibili risultati della sovrapposizione, sia i nodi per cui la proprietà è rispettata sia quelli per cui è violata.
+
+Per individuare selettivamente le violazioni, si prepara un qubit ausiliario nello stato $|-\rangle$ tramite l'applicazione di un gate $X$ seguito da un gate di Hadamard, secondo la tecnica di \emph{phase kickback} introdotta nel Capitolo~\ref{ch:quantum} (Sezione~\ref{sec:phase-kickback}). Ad ogni iterazione dell'algoritmo di Grover:
+\begin{enumerate}
+  \item si applica il circuito di verifica della proprietà $V$ (Sezione~\ref{sec:proprieta});
+  \item si complementa il qubit di output di $V$ e lo si utilizza come controllo di un CNOT verso il qubit ausiliario $|-\rangle$: per effetto del phase kickback, questa operazione imprime una fase $-1$ esattamente sugli stati per cui l'output di $V$ vale $0$, cioè sui nodi per cui la proprietà \emph{non} è rispettata. Si realizza così un oracolo di fase (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:oracoli-fase}) per la funzione booleana $g(i) = \overline{f_L(i) \wedge f_R(i)}$, che vale $1$ se e solo se il nodo $i$ viola la proprietà rispetto ad almeno uno dei due figli;
+  \item si applica nuovamente $V$ in forma inversa, per ripristinare a $|0\rangle$ tutti i registri ausiliari impiegati nel calcolo;
+  \item si applica l'operatore di diffusione $D$ (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:algoritmi}) sui soli qubit di indirizzo posti in sovrapposizione, realizzato secondo la costruzione $D = H^{\otimes(k-1)}(2|0\rangle\langle 0|-I)H^{\otimes(k-1)}$.
+\end{enumerate}
+L'intera iterata viene ripetuta $R \approx \left\lfloor \frac{\pi}{4}\sqrt{N} \right\rfloor$ volte. Al termine, una misura dei qubit di indirizzo restituisce, con probabilità amplificata, l'indirizzo di un nodo che viola la proprietà di max-heap.
+
+Va osservato che questo numero di iterazioni appena calcolato assume l'esistenza di un'unica violazione ($M=1$) nello spazio di ricerca. Se le violazioni presenti sono più di una, la formula corretta diventa $R\approx\frac{\pi}{4}\sqrt{N/M}$ (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:algoritmi}); in particolare, quanto più l'heap risulta disordinato, tanto maggiore sarà $M$, e tanto più il rapporto $\sqrt{N/M}$ si avvicinerà all'unità: in questo regime il vantaggio offerto da Grover rispetto a una singola misura casuale nello spazio di ricerca si riduce progressivamente, fino a rendere l'algoritmo sostanzialmente equivalente a un'estrazione casuale tra le violazioni presenti. Se invece non esiste alcuna violazione nello spazio di ricerca ($M=0$), non vi è alcuno stato da amplificare: l'oracolo di fase non introduce alcuna differenza di fase tra gli stati della sovrapposizione, e la misura finale restituisce, con probabilità uniforme, l'indirizzo di un nodo qualsiasi tra quelli considerati, il quale, non essendovi violazioni, rispetterà necessariamente la proprietà di max-heap rispetto a entrambi i figli.
+\section{Esperimenti}

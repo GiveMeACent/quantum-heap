@@ -1,6 +1,6 @@
-\chapter{Principi di computazione quantistica}
+\chapter{Principi di computazione quantistica \label{ch:quantum}}
 \section{Introduzione}
-Come già accennato, l'obiettivo è la costruzione e l'indagine della struttura dati Max Heap nel contesto della computazione quantistica. A tal fine, in questo capitolo vengono introdotti i concetti matematici e fisici necessari a comprendere il resto della trattazione.
+Come già accennato, l'obiettivo è la costruzione e l'indagine della struttura dati max-heap nel contesto della computazione quantistica. A tal fine, in questo capitolo vengono introdotti i concetti matematici e fisici necessari a comprendere il resto della trattazione.
 
 Nella Sezione~\ref{sec:richiami-algebra} si richiamano gli strumenti di algebra lineare (spazi di Hilbert, notazione di Dirac, operatori lineari e prodotto tensoriale) su cui si fonda il formalismo quantistico. Nella Sezione~\ref{sec:qubit} si introduce formalmente il qubit, la sua rappresentazione geometrica tramite la sfera di Bloch e i fenomeni di sovrapposizione e correlazione che ne caratterizzano il comportamento. Nella Sezione~\ref{sec:operazioni} si descrivono le operazioni che è possibile compiere sui qubit, distinguendo tra porte singole e porte controllate, che costituiscono i mattoni fondamentali di ogni circuito quantistico. Infine, nella Sezione~\ref{sec:algoritmi} questi strumenti vengono applicati alla descrizione dell'algoritmo di Grover, un esempio di algoritmo quantistico che offre gli strumenti concettuali utilizzati nel seguito della trattazione.
 
@@ -10,10 +10,10 @@ Uno degli oggetti centrali per la rappresentazione dell'informazione quantistica
 \begin{equation}
   v =
   \begin{pmatrix}
-  v_0\\
-  v_1\\
-  \vdots\\
-  v_{d - 1}
+    v_0    \\
+    v_1    \\
+    \vdots \\
+    v_{d - 1}
   \end{pmatrix}
 \end{equation}
 Ogni valore $v_k$ con $k \in [0, d - 1]$ è chiamato ampiezza. La norma del vettore $v$, denotata con $||v||$, è così definita:
@@ -25,10 +25,10 @@ Si denota poi $v(i) = v_i$.
 Nella presente trattazione si utilizza la notazione di Dirac, o notazione bra-ket, per rappresentare i vettori dello spazio di Hilbert. Per rappresentare un generico vettore $v \in \mathcal{H}$ si scrive:
 \begin{equation}
   | v \rangle = \begin{pmatrix}
-  v_0\\
-  v_1\\
-  \vdots\\
-  v_{d - 1}
+    v_0    \\
+    v_1    \\
+    \vdots \\
+    v_{d - 1}
   \end{pmatrix}
   \iff
   \langle v | = (v_0^*, v_1^*, \dots, v_{d - 1}^*).
@@ -37,30 +37,30 @@ Il prodotto scalare tra due vettori $v, w \in \mathcal{H}$ è definito come segu
 \subsection{Basi di uno spazio di Hilbert}
 Se $\mathcal{H}$ è uno spazio di Hilbert arbitrario con dimensione $d$ finita, allora si può scegliere una base ortonormale $\{|e_i\rangle\}^{d - 1}_{i=0}$, cioè tale che:
 \begin{equation}
-\langle e_i | e_j \rangle =
-\begin{cases}
-  1 \text{ se } i = j\\
-  0 \text{ se } i \neq j\\
-\end{cases}
+  \langle e_i | e_j \rangle =
+  \begin{cases}
+    1 \text{ se } i = j    \\
+    0 \text{ se } i \neq j \\
+  \end{cases}
 \end{equation}
 La base ortonormale standard di $\mathcal{H} = \mathbb{C}^d$ è la seguente serie di vettori:
 \begin{equation}
   |0\rangle = \begin{pmatrix}
-    1\\
-    0\\
-    \vdots\\
+    1      \\
+    0      \\
+    \vdots \\
     0
   \end{pmatrix},
   |1\rangle = \begin{pmatrix}
-    0\\
-    1\\
-    \vdots\\
+    0      \\
+    1      \\
+    \vdots \\
     0
   \end{pmatrix},
   |d - 1\rangle = \begin{pmatrix}
-    0\\
-    0\\
-    \vdots\\
+    0      \\
+    0      \\
+    \vdots \\
     1
   \end{pmatrix}.
 \end{equation}
@@ -82,7 +82,7 @@ Un qubit costituisce l'unità di informazione quantistica; il suo stato appartie
 \begin{equation}
   q =
   \begin{pmatrix}
-    \alpha\\
+    \alpha \\
     \beta
   \end{pmatrix}
 \end{equation}
@@ -94,9 +94,9 @@ I sistemi formati da più qubit sono esprimibili tramite il prodotto tensoriale 
 \begin{equation}
   a =
   \begin{pmatrix}
-    a_0\\
-    a_1\\
-    \vdots\\
+    a_0    \\
+    a_1    \\
+    \vdots \\
     a_{N - 1}
   \end{pmatrix}
 \end{equation}
@@ -121,29 +121,29 @@ Le porte, o gate, singole agiscono su qubit singoli e alcune delle matrici più 
 \begin{equation}
   X =
   \begin{bmatrix}
-    0 & 1\\
+    0 & 1 \\
     1 & 0
   \end{bmatrix},
   Y =
   \begin{bmatrix}
-    0 & -i\\
+    0 & -i \\
     i & 0
   \end{bmatrix},
   Z =
   \begin{bmatrix}
-    1 & 0\\
+    1 & 0  \\
     0 & -1
   \end{bmatrix}.
 \end{equation}
 Un'altra porta rilevante nel modello quantistico è la porta di Hadamard che permette di porre in sovrapposizione un qubit tramite una rotazione. Essa ha la seguente forma:
 \begin{equation}
   H = \frac{1}{\sqrt{2}}\begin{bmatrix}
-    1 & 1\\
+    1 & 1  \\
     1 & -1
   \end{bmatrix}
 \end{equation}
 \subsection{Porte controllate}
-Le porte controllate agiscono applicando una trasformazione a un qubit target solo se il qubit o i qubit di controllo si trovano in uno stato specifico. Questo tipo di porte sono fondamentali per porre in entanglement più qubit. Alcune delle porte più comuni sono le porte CNOT e di Toffoli. La porta CNOT applica l'operazione $X$ al qubit bersaglio se e solo se il qubit di controllo si trova nello stato $|1\rangle$. La porta di Toffoli è una porta che agisce su tre qubit, secondo lo stesso principio della porta CNOT, essa applica la porta $X$ al qubit target se e solo se gli altri due qubit di controllo si trovano nello stato $|1\rangle$.
+Le porte controllate agiscono applicando una trasformazione a un qubit bersaglio solo se il qubit o i qubit di controllo si trovano in uno stato specifico. Questo tipo di porte sono fondamentali per porre in entanglement più qubit. Alcune delle porte più comuni sono le porte CNOT e di Toffoli. La porta CNOT applica l'operazione $X$ al qubit bersaglio se e solo se il qubit di controllo si trova nello stato $|1\rangle$. La porta di Toffoli è una porta che agisce su tre qubit, secondo lo stesso principio della porta CNOT, essa applica la porta $X$ al qubit bersaglio se e solo se gli altri due qubit di controllo si trovano nello stato $|1\rangle$.
 \subsection{Misure}
 Una misura è un tipo di operazione irreversibile e probabilistica che altera il sistema, in particolare, per un qubit, i valori $\alpha$ e $\beta$.
 Dato un vettore $a$, ogni valore assoluto dell'ampiezza del vettore elevato alla seconda, quindi $|a_k|^2$, fornisce la probabilità che il sistema, dopo una misura, si trovi nello stato associato all'ampiezza.
@@ -155,16 +155,16 @@ Esistono varie forme di oracolo, una delle forme più comuni è l'oracolo boolea
 \begin{equation}
   U_f|x, \overline{0}\rangle = |x, f(x)\rangle
 \end{equation}
-\subsection{Phase kickback}
-Il phase kickback è un fenomeno per cui un'operazione quantistica controllata imprime una fase relativa al qubit o ai qubit di controllo invece di alterare lo stato dei qubit target. Il phase kickback rappresenta uno dei blocchi più importanti degli algoritmi quantistici. Un esempio dell'avvenimento di questo fenomeno è l'applicazione della porta CNOT allo stato $|+-\rangle$ con primo qubit controllo e secondo qubit target. Si ha che:
+\subsection{Phase kickback \label{sec:phase-kickback}}
+Il phase kickback è un fenomeno per cui un'operazione quantistica controllata imprime una fase relativa al qubit o ai qubit di controllo invece di alterare lo stato dei qubit bersaglio. Il phase kickback rappresenta uno dei blocchi più importanti degli algoritmi quantistici. Un esempio dell'avvenimento di questo fenomeno è l'applicazione della porta CNOT allo stato $|+-\rangle$ con primo qubit controllo e secondo qubit bersaglio. Si ha che:
 \begin{equation}
   CNOT|+-\rangle = |--\rangle
 \end{equation}
-Come si può osservare, il cambiamento è avvenuto sul qubit di controllo e non sul qubit di target.
-\subsection{Oracoli di fase}
+Come si può osservare, il cambiamento è avvenuto sul qubit di controllo e non sul qubit di bersaglio.
+\subsection{Oracoli di fase \label{sec:oracoli-fase}}
 Un'altra delle forme più comuni di un oracolo è l'oracolo di fase, denotato con $P_f$ e descritto dalla seguente evoluzione unitaria:
 \begin{equation}
-P_f|x\rangle = (-1)^{f(x)}|x\rangle
+  P_f|x\rangle = (-1)^{f(x)}|x\rangle
 \end{equation}
 Passare da un oracolo booleano ad un oracolo di fase è relativamente semplice, basta infatti porre nello stato $|-\rangle$ il registro di output.
 \subsection{L'algoritmo di Grover}
@@ -194,11 +194,22 @@ L'operatore $D$ realizza una riflessione rispetto allo stato medio $|s\rangle$ e
 \end{equation}
 Nella pratica, $D$ si implementa come $D = H^{\otimes n}(2|0\rangle\langle 0| - I)H^{\otimes n}$, utilizzando solamente porte di Hadamard e una riflessione rispetto allo stato $|0\rangle^{\otimes n}$, quest'ultima realizzabile tramite porte controllate multiple.
 \subsubsection{Interpretazione geometrica}
-L'azione dell'iterata di Grover si comprende intuitivamente considerando il sottospazio bidimensionale generato dallo stato marcato $|x^*\rangle$ e dallo stato $|u\rangle$, sovrapposizione uniforme di tutti gli stati non marcati. Lo stato iniziale $|s\rangle$ si può scrivere come combinazione di questi due vettori:
+L'azione dell'iterata di Grover si comprende intuitivamente considerando il sottospazio bidimensionale generato dallo stato marcato $|x^*\rangle$ e dallo stato $|u\rangle$, sovrapposizione uniforme di tutti gli stati non marcati:
+\begin{equation}
+  |u\rangle = \frac{1}{\sqrt{N-1}}\sum_{x \neq x^*}|x\rangle.
+\end{equation}
+Lo stato $|u\rangle$ rappresenta quindi la situazione in cui ogni stato diverso da $x^*$ ha eguale probabilità di essere misurato, mentre lo stato marcato $x^*$ ha probabilità nulla: è, in un certo senso, la rappresentazione dell'assenza di informazione sulla soluzione. Lo stato iniziale $|s\rangle$ si può scrivere come combinazione di questi due vettori:
 \begin{equation}
   |s\rangle = \cos{\frac{\theta}{2}}|u\rangle + \sin{\frac{\theta}{2}}|x^*\rangle, \qquad \text{con } \sin{\frac{\theta}{2}} = \frac{1}{\sqrt{N}}.
 \end{equation}
-Sia $P_f$ che $D$ agiscono come riflessioni all'interno di questo sottospazio: $P_f$ riflette rispetto a $|u\rangle$, mentre $D$ riflette rispetto a $|s\rangle$. La composizione di due riflessioni è una rotazione, dunque ogni applicazione di $G$ ruota lo stato di un angolo $\theta$ verso lo stato marcato $|x^*\rangle$. Applicando $G$ un numero $R$ di volte, lo stato si allontana progressivamente da $|u\rangle$ avvicinandosi a $|x^*\rangle$.
+
+Si consideri ora l'azione dell'oracolo di fase $P_f$ su un generico stato $a|u\rangle + b|x^*\rangle$ del sottospazio. Poiché $P_f$ lascia invariata l'ampiezza di ogni stato diverso da $x^*$ (e dunque anche $|u\rangle$, che di tali stati è una combinazione), mentre inverte il segno della sola componente lungo $|x^*\rangle$, si ha:
+\begin{equation}
+  P_f\big(a|u\rangle + b|x^*\rangle\big) = a|u\rangle - b|x^*\rangle.
+\end{equation}
+Questa è esattamente l'espressione di una riflessione rispetto all'asse $|u\rangle$: ogni stato viene "ribaltato" dall'altra parte rispetto alla direzione che rappresenta l'equiprobabilità fra tutte le risposte sbagliate. Applicato allo stato $|s\rangle$, questo significa che la componente lungo $|u\rangle$ (cioè quanto lo stato "assomiglia" a una condizione di totale incertezza sulla soluzione) resta invariata, mentre la componente lungo $|x^*\rangle$ cambia segno, allontanando geometricamente lo stato dalla direzione $|u\rangle$.
+
+Anche $D$ agisce come riflessione all'interno dello stesso sottospazio, ma rispetto a $|s\rangle$ anziché a $|u\rangle$. La composizione di due riflessioni è una rotazione: applicando prima $P_f$ (riflessione rispetto a $|u\rangle$) e poi $D$ (riflessione rispetto a $|s\rangle$), ogni applicazione di $G$ ruota lo stato di un angolo $\theta$ verso lo stato marcato $|x^*\rangle$, allontanandolo progressivamente dalla direzione di equiprobabilità $|u\rangle$. Applicando $G$ un numero $R$ di volte, lo stato si avvicina dunque sempre di più a $|x^*\rangle$.
 \subsubsection{Numero di iterazioni}
 Poiché $\theta$ è piccolo per $N$ grande, si può approssimare $\theta \approx 2/\sqrt{N}$. L'obiettivo è ruotare lo stato di un angolo vicino a $\pi/2$, in modo che la probabilità di misurare $|x^*\rangle$ sia massima; il numero ottimale di iterazioni è quindi:
 \begin{equation}
