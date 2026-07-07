@@ -1,6 +1,6 @@
 \chapter{Heap \label{ch:heap}}
 \section{Introduzione}
-L'heap è una struttura dati basata sull'albero i cui nodi rispettano una particolare proprietà e condividono delle relazioni. Vi sono due tipi di heap: min-heap e max-heap. In questo capitolo verranno indagati i max-heap, la loro rappresentazione e le procedure fondamentali che permettono di costruirli e mantenerli, in modo da fornire il termine di paragone classico per le versioni quantistiche di queste stesse operazioni, discusse nei capitoli successivi.
+L'heap è una struttura dati basata sull'albero i cui nodi rispettano una particolare proprietà e condividono delle relazioni. Vi sono due tipi di heap: min-heap e max-heap. In questo capitolo verranno indagati i max-heap \cite{cormen2022introduction}, la loro rappresentazione e le procedure fondamentali che permettono di costruirli e mantenerli, in modo da fornire il termine di paragone classico per le versioni quantistiche di queste stesse operazioni, discusse nei capitoli successivi.
 
 Un max-heap è un albero binario quasi completo, ossia un albero binario in cui ogni livello è completamente riempito ad eccezione, eventualmente, dell'ultimo, che viene riempito da sinistra verso destra. Questa struttura viene tipicamente rappresentata tramite un array $A$, dove ogni nodo dell'albero corrisponde ad un elemento dell'array e le relazioni di parentela tra i nodi sono espresse tramite semplici operazioni aritmetiche sugli indici, come verrà mostrato nella Sezione~\ref{sec:figli}.
 
@@ -28,16 +28,16 @@ Indicizzando l'array $A$ a partire da $0$, queste operazioni permettono di navig
 
 \section{Procedure \label{sec:procedure}}
 \subsection{Max-Heapify}
-La procedura Max-Heapify ha il compito di mantenere la proprietà di max heap. Riceve in input un array $A$ e un indice $i$ e assume che i sottoalberi radicati in $\text{Left}(i)$ e $\text{Right}(i)$ siano già degli heap validi, mentre $A[i]$ potrebbe violare la proprietà rispetto ai suoi figli. La procedura fa "scendere" il valore $A[i]$ lungo l'albero fino a ripristinare la proprietà di heap:
+La procedura Max-Heapify ha il compito di mantenere la proprietà di max-heap. Riceve in input un array $A$ e un indice $i$ e assume che i sottoalberi radicati in $\text{Left}(i)$ e $\text{Right}(i)$ siano già degli heap validi, mentre $A[i]$ potrebbe violare la proprietà rispetto ai suoi figli. La procedura fa "scendere" il valore $A[i]$ lungo l'albero fino a ripristinare la proprietà di heap:
 \begin{lstlisting}[caption={Max-Heapify},label=lst:max-heapify,escapechar=|]
 Max-Heapify(A, i)
   l = Left(i)
   r = Right(i)
-  if l <= A.heap-size - 1 and A[l] > A[i]
+  if l < A.heap-size and A[l] > A[i]
     largest = l
   else
     largest = i
-  if r <= A.heap-size - 1 and A[r] > A[largest]
+  if r < A.heap-size and A[r] > A[largest]
     largest = r
   if largest != i
     exchange A[i] with A[largest]
@@ -46,7 +46,7 @@ Max-Heapify(A, i)
 Ad ogni chiamata ricorsiva, il nodo scende di un livello lungo l'albero; poiché l'altezza dell'heap è $\mathcal{O}(\log n)$, la complessità di Max-Heapify è $\mathcal{O}(\log n)$.
 
 \subsection{Build-Max-Heap}
-La procedura Build-Max-Heap costruisce un max heap valido a partire da un array non ordinato, applicando Max-Heapify a tutti i nodi non foglia, procedendo dal basso verso l'alto:
+La procedura Build-Max-Heap costruisce un max-heap valido a partire da un array non ordinato, applicando Max-Heapify a tutti i nodi non foglia, procedendo dal basso verso l'alto:
 \begin{lstlisting}[caption={Build-Max-Heap},label=lst:build-max-heap]
 Build-Max-Heap(A)
   A.heap-size = A.length

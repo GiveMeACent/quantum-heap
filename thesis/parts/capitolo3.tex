@@ -8,7 +8,7 @@ Nella Sezione~\ref{sec:forma-codifica} si discute la scelta della forma e della 
 Innanzitutto, la prima scelta verte sulla forma che i dati devono avere: essi devono avere forma classica o quantistica? La risposta a questa domanda deriva dall'applicabilità della proprietà max-heap: è difatti impossibile definire un ordinamento totale che sia compatibile con le proprietà di un qubit. La proprietà di max-heap, infatti, richiede che per ogni coppia di nodi sia sempre possibile stabilire in modo univoco quale dei due valori sia maggiore o uguale all'altro (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:proprieta}). Lo stato di un qubit, tuttavia, è una sovrapposizione di ampiezze complesse (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:qubit}) e l'unico modo per accedere a un valore osservabile è tramite una misura, la quale altera irreversibilmente lo stato e ne restituisce un risultato probabilistico. Non esiste quindi un criterio stabile e ripetibile per confrontare due qubit generici, ragion per cui la proprietà di max-heap non può essere definita direttamente su dati in forma quantistica. Si deve dunque scegliere di codificare dei dati di forma classica. Inoltre, data la natura dei qubit, si sceglierà di codificare i dati in linguaggio numerico binario. La seconda scelta verte sulla codifica dei dati, in questa trattazione, si individuano due modi per codificare i dati.
 
 \subsection{Dati codificati in forma circuitale \label{sec:forma-circuitale}}
-Il primo modo consiste nel codificare i dati all'interno di un circuito e cioè "hardcodarli" all'interno di un oracolo che è possibile interrogare, questo approccio è conosciuto in letteratura come "Quantum Read-Only Memory" (QROM), una struttura dati designata a caricare dati classici in un computer quantistico. Un tale tipo di struttura, tuttavia, è immutabile, ossia non permette né la modifica di dati già esistenti né l'inserimento di nuovi dati.
+Il primo modo consiste nel codificare i dati all'interno di un circuito e cioè "hardcodarli" all'interno di un oracolo che è possibile interrogare, questo approccio è conosciuto in letteratura come "Quantum Read-Only Memory" (QROM), una struttura dati designata a caricare dati classici in un computer quantistico. Un tale tipo di struttura, tuttavia, è immutabile, ossia non permette né la modifica di dati già esistenti né l'inserimento di nuovi dati \cite{Babbush_2018}.
 
 \subsection{Dati codificati in forma di bit \label{sec:forma-bit}}
 Il secondo modo consiste nell'inizializzare opportunamente ogni qubit ed utilizzando il gate $X$ per rappresentare i bit a valore uno. In questo modo è possibile aggiungere e modificare i dati.
@@ -46,7 +46,7 @@ Infine, gli stessi gate $X$ applicati inizialmente vengono riapplicati, cosicch�
 Applicato in questo modo, questo procedimento richiede un numero di gate multi-controllati proporzionale a $N \cdot m$.
 
 \subsection{Forma di bit}
-In forma di bit, la primitiva di accesso viene costruita tramite delle rotazioni. Si rappresentino i dati come $N$ elementi $q_0, q_1, \dots, q_{N-1}$, ciascuno codificato su $m$ qubit, disposti in un unico registro di $N \cdot m$ qubit. Si definisca l'operatore di rotazione ciclica $R_s$, che trasla ciclicamente di $s$ posizioni gli $N$ elementi del registro:
+In forma di bit, la primitiva di accesso viene costruita tramite delle rotazioni. Si rappresentino i dati come $N$ elementi $q_0, q_1, \dots, q_{N-1}$, ciascuno codificato su $m$ qubit, disposti in un unico registro di $N \cdot m$ qubit \cite{cantone2026quantumlcs}. Si definisca l'operatore di rotazione ciclica $R_s$, che trasla ciclicamente di $s$ posizioni gli $N$ elementi del registro:
 \begin{equation}
   R_s |q_0, q_1, \dots, q_{N - 1}\rangle = |q_{-s \bmod N}, q_{1 - s \bmod N}, \dots, q_{N - 1 - s \bmod N}\rangle.
 \end{equation}
@@ -80,7 +80,7 @@ dove $[x > y]$ vale $1$ se $x > y$ e $0$ altrimenti, lasciando invariati entramb
 
 Il circuito confronta i due valori bit a bit, procedendo dal qubit più significativo verso quello meno significativo. Ad ogni posizione $k$, si verifica se il bit $k$-esimo di $x$ vale $1$ e il corrispondente bit di $y$ vale $0$, condizionatamente al fatto che tutti i bit più significativi già esaminati risultino uguali tra loro; in tal caso il qubit di output viene posto a $1$. L'informazione su quali bit più significativi siano stati finora uguali viene mantenuta temporaneamente sovrascrivendo il registro $|y\rangle$ stesso, evitando così l'uso di qubit ausiliari aggiuntivi oltre a quello di output: per ogni posizione, se il bit di $x$ e quello di $y$ coincidono, il qubit di $y$ viene aggiornato a $1$, altrimenti a $0$, fungendo da indicatore di uguaglianza da riutilizzare nel confronto della posizione successiva. Una volta terminato il confronto, una seconda cascata di gate ripristina il registro $|y\rangle$ al proprio valore originale, invertendo la codifica temporanea introdotta durante il confronto.
 \section{Verifica della proprietà \label{sec:verifica-proprieta}}
-Sulla base dei circuiti introdotti nelle sezioni precedenti, è possibile costruire un circuito che verifichi, per un dato indirizzo $i$, se la proprietà di max heap (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:proprieta}) sia rispettata rispetto ai figli del nodo in posizione $i$.
+Sulla base dei circuiti introdotti nelle sezioni precedenti, è possibile costruire un circuito che verifichi, per un dato indirizzo $i$, se la proprietà di max-heap (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:proprieta}) sia rispettata rispetto ai figli del nodo in posizione $i$.
 
 Il circuito opera su due registri: un registro di indirizzi, suddiviso in tre blocchi da $n$ qubit ciascuno, rispettivamente per l'indirizzo del nodo $i$, quello del figlio sinistro e quello del figlio destro, e un registro di valori, suddiviso in tre blocchi da $m$ qubit per i valori corrispondenti, seguiti da tre qubit ausiliari. Il circuito procede nei seguenti passi:
 \begin{enumerate}
@@ -97,7 +97,7 @@ Complessivamente, indicando con $f_L = [A[i] > A[\text{Left}(i)]]$ e $f_R = [A[i
     &|i\rangle\, |\text{Left}(i)\rangle\, |\text{Right}(i)\rangle\, |A[i]\rangle\, |A[\text{Left}(i)]\rangle\, |A[\text{Right}(i)]\rangle\, |f_L\rangle\, |f_R\rangle\, |f_L \wedge f_R\rangle\,
   \end{split}
 \end{equation}
-dove l'ultimo qubit indica se il nodo $i$ rispetta la proprietà di max heap rispetto a entrambi i figli.
+dove l'ultimo qubit indica se il nodo $i$ rispetta la proprietà di max-heap rispetto a entrambi i figli.
 \section{Ricerca delle violazioni \label{sec:ricerca-violazioni}}
 Disponendo dei circuiti costruiti fino ad ora, ci si chiede se sia possibile sfruttare le proprietà di sovrapposizione e correlazione per velocizzare la ricerca di eventuali violazioni della proprietà di max-heap. In questo paragrafo si indaga come individuare tali violazioni ponendo in sovrapposizione alcuni qubit dell'indirizzo, per poi applicare l'algoritmo di Grover (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:algoritmi}) al fine di amplificare la probabilità di osservare, con una misura, un nodo che viola la proprietà.
 
@@ -113,7 +113,7 @@ Fornendo questo indirizzo, con i qubit rimanenti in sovrapposizione, ai circuiti
 
 Per individuare selettivamente le violazioni, si prepara un qubit ausiliario nello stato $|-\rangle$ tramite l'applicazione di un gate $X$ seguito da un gate di Hadamard, secondo la tecnica di \emph{phase kickback} introdotta nel Capitolo~\ref{ch:quantum} (Sezione~\ref{sec:phase-kickback}). Ad ogni iterazione dell'algoritmo di Grover:
 \begin{enumerate}
-  \item si applica il circuito di verifica della proprietà $V$ (Sezione~\ref{sec:proprieta});
+  \item si applica il circuito di verifica della proprietà $V$ (Sezione~\ref{sec:verifica-proprieta});
   \item si complementa il qubit di output di $V$ e lo si utilizza come controllo di un CNOT verso il qubit ausiliario $|-\rangle$: per effetto del phase kickback, questa operazione imprime una fase $-1$ esattamente sugli stati per cui l'output di $V$ vale $0$, cioè sui nodi per cui la proprietà \emph{non} è rispettata. Si realizza così un oracolo di fase (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:oracoli-fase}) per la funzione booleana $g(i) = \overline{f_L(i) \wedge f_R(i)}$, che vale $1$ se e solo se il nodo $i$ viola la proprietà rispetto ad almeno uno dei due figli;
   \item si applica nuovamente $V$ in forma inversa, per ripristinare a $|0\rangle$ tutti i registri ausiliari impiegati nel calcolo;
   \item si applica l'operatore di diffusione $D$ (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:algoritmi}) sui soli qubit di indirizzo posti in sovrapposizione, realizzato secondo la costruzione $D = H^{\otimes(k-1)}(2|0\rangle\langle 0|-I)H^{\otimes(k-1)}$.
