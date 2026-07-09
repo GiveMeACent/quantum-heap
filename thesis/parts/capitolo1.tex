@@ -1,6 +1,6 @@
 \chapter{Principi di computazione quantistica \label{ch:quantum}}
 \section{Introduzione}
-Come già accennato, l'obiettivo è la costruzione e l'indagine della struttura dati max-heap nel contesto della computazione quantistica. A tal fine, in questo capitolo vengono introdotti i concetti matematici e fisici necessari \cite{Nielsen_Chuang_2010} a comprendere il resto della trattazione.
+Come già accennato, l'obiettivo è la costruzione e l'indagine della struttura dati max-heap nel contesto della computazione quantistica. A tal fine, in questo capitolo vengono introdotti i concetti matematici e fisici necessari a comprendere il resto della trattazione \cite{Nielsen_Chuang_2010}.
 
 Nella Sezione~\ref{sec:richiami-algebra} si richiamano gli strumenti di algebra lineare (spazi di Hilbert, notazione di Dirac, operatori lineari e prodotto tensoriale) su cui si fonda il formalismo quantistico. Nella Sezione~\ref{sec:qubit} si introduce formalmente il qubit, la sua rappresentazione geometrica tramite la sfera di Bloch e i fenomeni di sovrapposizione e correlazione che ne caratterizzano il comportamento. Nella Sezione~\ref{sec:operazioni} si descrivono le operazioni che è possibile compiere sui qubit, distinguendo tra porte singole e porte controllate, che costituiscono i mattoni fondamentali di ogni circuito quantistico. Infine, nella Sezione~\ref{sec:algoritmi} questi strumenti vengono applicati alla descrizione dell'algoritmo di Grover, un esempio di algoritmo quantistico che offre gli strumenti concettuali utilizzati nel seguito della trattazione.
 
@@ -106,6 +106,12 @@ La sfera di Bloch è la rappresentazione geometrica dello stato di un qubit. I p
 \begin{equation}
   |\psi\rangle = \cos{\frac{\theta}{2}}|0\rangle + e^{i\phi}\sin{\frac{\theta}{2}}|1\rangle
 \end{equation}
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.45\textwidth]{Images/Bloch_Sphere.pdf}
+  \caption{La sfera di Bloch, ossia la rappresentazione geometrica di un sistema quantistico a due livelli. Si noti come i valori $\phi$ e $\theta$ orientino in due direzioni diverse il valore del qubit \cite{blochsphere}.}
+  \label{fig:bloch}
+\end{figure}
 \subsection{Sovrapposizione}
 Il primo fenomeno fondamentale della meccanica quantistica è quello della sovrapposizione. Secondo questo fenomeno, due o più stati quantistici possono essere combinati linearmente insieme e il risultato è un altro stato quantistico. Lo stato di un qubit è rappresentato dalla sovrapposizione lineare dei due stati di base ortonormali. Formalmente, uno stato generico in sovrapposizione $|\psi\rangle$ è così rappresentabile:
 \begin{equation}
@@ -216,3 +222,10 @@ Poiché $\theta$ è piccolo per $N$ grande, si può approssimare $\theta \approx
   R \approx \left\lfloor \frac{\pi}{4}\sqrt{N} \right\rfloor.
 \end{equation}
 Dopo $R$ iterazioni, una misura del registro restituisce lo stato $|x^*\rangle$ con probabilità $1 - O(1/N)$, confermando il vantaggio quadratico rispetto alla ricerca classica. Se gli elementi marcati sono $M > 1$ anziché uno solo, la relazione precedente si generalizza a $\sin(\theta/2) = \sqrt{M/N}$ e il numero ottimale di iterazioni diventa $R \approx \frac{\pi}{4}\sqrt{N/M}$.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.45\textwidth]{Images/Grovers_algorithm_geometry.png}
+  \caption{L'interpretazione geometrica di un passo dell'algoritmo di Grover. Si noti come il vettore $|s\rangle$ sia riflesso attorno al vettore $|s'\rangle$ dai due operatori $U_sU_\omega$ per avvicinarlo al vettore $|\omega\rangle$ \cite{grover_geometry}.}
+  \label{fig:grover-geometry}
+\end{figure}

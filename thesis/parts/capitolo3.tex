@@ -8,10 +8,22 @@ Nella Sezione~\ref{sec:forma-codifica} si discute la scelta della forma e della 
 Innanzitutto, la prima scelta verte sulla forma che i dati devono avere: essi devono avere forma classica o quantistica? La risposta a questa domanda deriva dall'applicabilità della proprietà max-heap: è difatti impossibile definire un ordinamento totale che sia compatibile con le proprietà di un qubit. La proprietà di max-heap, infatti, richiede che per ogni coppia di nodi sia sempre possibile stabilire in modo univoco quale dei due valori sia maggiore o uguale all'altro (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:proprieta}). Lo stato di un qubit, tuttavia, è una sovrapposizione di ampiezze complesse (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:qubit}) e l'unico modo per accedere a un valore osservabile è tramite una misura, la quale altera irreversibilmente lo stato e ne restituisce un risultato probabilistico. Non esiste quindi un criterio stabile e ripetibile per confrontare due qubit generici, ragion per cui la proprietà di max-heap non può essere definita direttamente su dati in forma quantistica. Si deve dunque scegliere di codificare dei dati di forma classica. Inoltre, data la natura dei qubit, si sceglierà di codificare i dati in linguaggio numerico binario. La seconda scelta verte sulla codifica dei dati, in questa trattazione, si individuano due modi per codificare i dati.
 
 \subsection{Dati codificati in forma circuitale \label{sec:forma-circuitale}}
-Il primo modo consiste nel codificare i dati all'interno di un circuito e cioè "hardcodarli" all'interno di un oracolo che è possibile interrogare, questo approccio è conosciuto in letteratura come "Quantum Read-Only Memory" (QROM), una struttura dati designata a caricare dati classici in un computer quantistico. Un tale tipo di struttura, tuttavia, è immutabile, ossia non permette né la modifica di dati già esistenti né l'inserimento di nuovi dati \cite{Babbush_2018}.
+Il primo modo consiste nel codificare i dati all'interno di un circuito e cioè "hardcodarli" all'interno di un oracolo che è possibile interrogare, questo approccio è conosciuto in letteratura come "Quantum Read-Only Memory" (QROM) \cite{Babbush_2018}, una struttura dati designata a caricare dati classici in un computer quantistico. Un tale tipo di struttura, tuttavia, è immutabile, ossia non permette né la modifica di dati già esistenti né l'inserimento di nuovi dati.
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.45\textwidth]{Images/circuit_data.png}
+  \caption{Un esempio di codifica in forma circuitale. Nella figura, è stato codificato l'array $[101, 110, 111]$ accessibile tramite i primi due qubit, rappresentanti l'indirizzo. Si noti che il circuito verifica ogni indirizzo possibile tra $0$ e $n - 1$.}
+  \label{fig:circuit_data}
+\end{figure}
 
 \subsection{Dati codificati in forma di bit \label{sec:forma-bit}}
 Il secondo modo consiste nell'inizializzare opportunamente ogni qubit ed utilizzando il gate $X$ per rappresentare i bit a valore uno. In questo modo è possibile aggiungere e modificare i dati.
+\begin{figure}[ht]
+  \centering
+  \includegraphics[height=0.45\textwidth]{Images/bit_data.jpg}
+  \caption{Un esempio di codifica in forma di bit. Nella figura, è stato codificato l'array $[101, 110, 111]$.}
+  \label{fig:bit_data}
+\end{figure}
 
 I due approcci comportano dunque un compromesso opposto: la codifica in forma circuitale (Sezione~\ref{sec:forma-circuitale}) produce un oracolo compatto ed efficiente da interrogare, ma rigido, poiché ogni modifica ai dati richiede la costruzione di un nuovo circuito; la codifica in forma di bit (Sezione~\ref{sec:forma-bit}) è invece pienamente dinamica, al costo di richiedere delle operazioni più profonde per interrogare la struttura. In questa trattazione si esploreranno entrambi gli approcci.
 \section{Primitive di accesso \label{sec:primitive-accesso}}
@@ -46,7 +58,7 @@ Infine, gli stessi gate $X$ applicati inizialmente vengono riapplicati, cosicch�
 Applicato in questo modo, questo procedimento richiede un numero di gate multi-controllati proporzionale a $N \cdot m$.
 
 \subsection{Forma di bit}
-In forma di bit, la primitiva di accesso viene costruita tramite delle rotazioni. Si rappresentino i dati come $N$ elementi $q_0, q_1, \dots, q_{N-1}$, ciascuno codificato su $m$ qubit, disposti in un unico registro di $N \cdot m$ qubit \cite{cantone2026quantumlcs}. Si definisca l'operatore di rotazione ciclica $R_s$, che trasla ciclicamente di $s$ posizioni gli $N$ elementi del registro:
+In forma di bit, la primitiva di accesso viene costruita tramite delle rotazioni, utilizzando nel presente contesto la tecnica impiegata in \cite{cantone2026quantumlcs}. Si rappresentino i dati come $N$ elementi $q_0, q_1, \dots, q_{N-1}$, ciascuno codificato su $m$ qubit, disposti in un unico registro di $N \cdot m$ qubit. Si definisca l'operatore di rotazione ciclica $R_s$, che trasla ciclicamente di $s$ posizioni gli $N$ elementi del registro:
 \begin{equation}
   R_s |q_0, q_1, \dots, q_{N - 1}\rangle = |q_{-s \bmod N}, q_{1 - s \bmod N}, \dots, q_{N - 1 - s \bmod N}\rangle.
 \end{equation}
@@ -57,6 +69,13 @@ Sfruttando la decomposizione binaria di un generico indirizzo $j = \sum_{i=0}^{n
 dove $C_{j_i}(R_{2^i})$ denota la rotazione $R_{2^i}$ applicata in modo controllato dal qubit $i$-esimo del registro indirizzo $|j\rangle$. Poiché ogni bit del registro indirizzo controlla una rotazione di ampiezza distinta, questa costruzione realizza coerentemente, per ogni ramo della sovrapposizione di $|j\rangle$, la rotazione corrispondente al valore di $j$ codificato in quel ramo. Va inoltre notato che, essendo ogni elemento codificato su $m$ qubit, ciascuna rotazione controllata deve essere applicata separatamente a ciascuno degli $m$ "piani" di qubit che compongono gli elementi, agendo in parallelo sul qubit $b$-esimo di ogni elemento, per $b = 0, \dots, m-1$.
 
 Applicando $R_j$ (o il suo inverso, a seconda della convenzione scelta), l'elemento $A[j]$ viene portato in una posizione di riferimento fissa del registro, ad esempio la posizione $0$, rendendolo così accessibile tramite semplici gate locali, non controllati, sia in lettura sia in scrittura; la rotazione inversa $R_j^\dagger$ riporta poi ogni elemento alla propria posizione originale. Rispetto alla codifica in forma circuitale, questo approccio richiede solamente $n = \lceil \log_2 N \rceil$ stadi di rotazione controllata anziché un numero di gate proporzionale a $N$, sebbene ciascuna rotazione agisca potenzialmente su tutti gli $N$ elementi, per cui la profondità complessiva del circuito resta significativa.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.45\textwidth]{Images/rotation.jpg}
+  \caption{Un esempio di accesso tramite rotazione al primo elemento dell'array $[101, 110, 111]$.}
+  \label{fig:rotation}
+\end{figure}
 \section{Calcolo delle posizioni dei figli \label{sec:calcolo-figli}}
 Per poter navigare la struttura heap (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:figli}) sono necessari due circuiti che, dato il registro di indirizzo $|i\rangle$ di un nodo, ne calcolino l'indirizzo del figlio sinistro e del figlio destro. Analogamente alla primitiva di accesso (Sezione~\ref{sec:primitive-accesso}), questi circuiti scrivono il risultato in un registro di output ausiliario, inizialmente posto a $|0\rangle^{\otimes n}$, lasciando inalterato il registro di indirizzo:
 \begin{equation}
@@ -70,6 +89,13 @@ Il circuito $U_R$ condivide con $U_L$ esattamente lo stesso scorrimento iniziale
   \text{Right}(i) = \text{Left}(i) + 1,
 \end{equation}
 coerentemente con quanto già osservato nel Capitolo~\ref{ch:heap} (Sezione~\ref{sec:figli}), dove $\text{Right}(i)$ è definito come $\text{Left}(i)$ incrementato dell'ultimo bit posto a $1$.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.45\textwidth]{Images/children_circuit.png}
+  \caption{Un esempio di calcolo di figlio destro e sinistro.}
+  \label{fig:children_calc}
+\end{figure}
 
 \section{Relazione di disuguaglianza \label{sec:disuguaglianza}}
 Per ristabilire la proprietà di max-heap (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:proprieta}) su dati codificati quantisticamente è necessario un circuito che realizzi il confronto $\geq$ tra due valori. A tal fine si costruisce un oracolo di confronto $C_>$ che, dati due registri $|x\rangle, |y\rangle$ di $n$ qubit e un qubit di output inizialmente a $|0\rangle$, calcola:

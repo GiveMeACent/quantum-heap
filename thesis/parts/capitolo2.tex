@@ -26,6 +26,12 @@ Parent(i)
 \end{lstlisting}
 Indicizzando l'array $A$ a partire da $0$, queste operazioni permettono di navigare l'albero senza bisogno di puntatori espliciti: dato un nodo in posizione $i$, i suoi figli si trovano rispettivamente in posizione $2i + 1$ e $2i + 2$, mentre il padre si trova in posizione $\lfloor (i-1)/2 \rfloor$.
 
+\begin{figure}[h]
+  \centering
+  \input{Images/heap_figure.tex}
+  \caption{Rappresentazione di un max-heap come albero e come array.}
+\end{figure}
+
 \section{Procedure \label{sec:procedure}}
 \subsection{Max-Heapify}
 La procedura Max-Heapify ha il compito di mantenere la proprietà di max-heap. Riceve in input un array $A$ e un indice $i$ e assume che i sottoalberi radicati in $\text{Left}(i)$ e $\text{Right}(i)$ siano già degli heap validi, mentre $A[i]$ potrebbe violare la proprietà rispetto ai suoi figli. La procedura fa "scendere" il valore $A[i]$ lungo l'albero fino a ripristinare la proprietà di heap:
