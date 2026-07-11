@@ -9,14 +9,15 @@ def main():
   phase: QuantumRegister = QuantumRegister(1)
   creg: ClassicalRegister = ClassicalRegister(27)
   vector: list[int] = [5, 6, 7, 4, 3, 2, 1]
-  bits: int = 4
+  bits: int = 5
 
   fullCircuit = QuantumCircuit(cQAddrValues, cQRegValues, phase, creg)
 
-  # fullCircuit.compose(leftChildCircuit(
-  #     bits, cQAddrValues, cQRegValues), inplace=True)
-  # fullCircuit.compose(rightChildCircuit(
-  #     bits, cQAddrValues, cQRegValues, addrStartIndex=4), inplace=True)
+  fullCircuit.compose(leftChildCircuit(
+      bits, cQAddrValues, cQRegValues), inplace=True)
+  fullCircuit.barrier()
+  fullCircuit.compose(rightChildCircuit(
+      bits, cQAddrValues, cQRegValues, addrStartIndex=5), inplace=True)
 
   # fullCircuit.compose(selectAccess(
   #     vector, bits, customQAddrReg=cQAddrValues, customQRegValues=cQRegValues), inplace=True)
@@ -35,8 +36,8 @@ def main():
   # fullCircuit.compose(propertyVerifier(
   #     vector, bits, cQAddrValues, cQRegValues), inplace=True)
 
-  fullCircuit.compose(groverSearch(
-      vector, bits, cQAddrValues, cQRegValues), inplace=True)
+  # fullCircuit.compose(groverSearch(
+  #     vector, bits, cQAddrValues, cQRegValues), inplace=True)
 
   fullCircuit.draw('mpl', filename='test.jpg')
 
