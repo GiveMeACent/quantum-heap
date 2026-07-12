@@ -15,7 +15,7 @@ dove il registro degli indirizzi contiene l'indice dell'elemento da recuperare, 
 
 Parallelamente allo studio delle primitive di memoria, diverse ricerche si sono concentrate sull'utilizzo di strutture gerarchiche nel modello quantistico. In particolare, le strutture ad albero rivestono un ruolo importante in numerosi algoritmi quantistici basati su quantum walk: un esempio paradigmatico è la valutazione dell'albero NAND \cite{farhi2008nandtree}, dove un quantum walk a tempo continuo permette di valutare la radice di un albero binario completo con un vantaggio quadratico rispetto al miglior algoritmo classico noto. In questi approcci, la topologia del grafo sottostante influenza direttamente il comportamento della ricerca. Essi, tuttavia, non introducono necessariamente una relazione d'ordine tra gli elementi analoga a quella presente in strutture dati classiche come il max-heap, limitandosi tipicamente alla valutazione di funzioni booleane definite sui nodi.
 
-A quanto risulta da questa ricerca sulla letteratura esistente, non emergono proposte che definiscano una struttura heap o una coda di priorità quantistica, dotata della corrispondente proprietà di ordinamento tra un nodo e i propri discendenti diretti. In alcuni contesti di programmazione quantistica, il termine \emph{quantum heap} viene infatti utilizzato per indicare meccanismi di gestione dinamica della memoria quantistica \cite{su2024biquantumheaps, svore2018qsharp}, senza alcun riferimento a una struttura dati gerarchica ordinata. Un'eccezione è rappresentata dal Quantum B+ Tree \cite{liu2024treelikequantumdatastructure}, la prima struttura dati quantistica ad albero proposta in letteratura: essa replica la struttura gerarchica di un B+ tree classico in QRAM per rispondere a interrogazioni di intervallo (\emph{range query}) sfruttando il parallelismo quantistico, ottenendo una complessità $\mathcal{O}(\log_B N)$. A differenza del presente lavoro, tale struttura codifica un ordinamento statico tra le chiavi per finalità di ricerca per intervalli, e non affronta il problema di verificare dinamicamente una proprietà d'ordine gerarchica locale (quale la proprietà di max-heap) né quello di individuarne le violazioni. né quello di individuarne le violazioni. A quanto risulta da questa ricerca sulla letteratura esistente, non emergono invece proposte di una struttura dati heap o coda di priorità esplicitamente definita nel modello quantistico. La scelta del max-heap come caso di studio è motivata dalla semplicità della sua proprietà locale: ogni nodo deve soddisfare una relazione d'ordine solamente con i propri figli diretti, rendendo possibile una prima analisi della verifica di invarianti strutturali nel modello quantistico. Il contributo si concentra sulla definizione delle primitive necessarie alla verifica della proprietà strutturale dell'heap attraverso:
+A quanto risulta da questa ricerca sulla letteratura esistente, non emergono proposte che definiscano una struttura heap o una coda di priorità quantistica, dotata della corrispondente proprietà di ordinamento tra un nodo e i propri discendenti diretti. In alcuni contesti di programmazione quantistica, il termine \emph{quantum heap} viene infatti utilizzato per indicare meccanismi di gestione dinamica della memoria quantistica \cite{su2024biquantumheaps, svore2018qsharp}, senza alcun riferimento a una struttura dati gerarchica ordinata. Un'eccezione è rappresentata dal Quantum B+ Tree \cite{liu2024treelikequantumdatastructure}, la prima struttura dati quantistica ad albero proposta in letteratura: essa replica la struttura gerarchica di un B+ tree classico in QRAM per rispondere a interrogazioni di intervallo (\emph{range query}) sfruttando il parallelismo quantistico, ottenendo una complessità $\mathcal{O}(\log_B N)$. A differenza del presente lavoro, tale struttura codifica un ordinamento statico tra le chiavi per finalità di ricerca per intervalli, e non affronta il problema di verificare dinamicamente una proprietà d'ordine gerarchica locale (quale la proprietà di max-heap) né quello di individuarne le violazioni. La scelta del max-heap come caso di studio è motivata dalla semplicità della sua proprietà locale: ogni nodo deve soddisfare una relazione d'ordine solamente con i propri figli diretti, rendendo possibile una prima analisi della verifica di invarianti strutturali nel modello quantistico. Il contributo si concentra sulla definizione delle primitive necessarie alla verifica della proprietà strutturale dell'heap attraverso:
 \begin{itemize}
   \item una primitiva di accesso agli elementi della memoria;
   \item operatori per il calcolo delle relazioni padre-figlio;
@@ -81,17 +81,28 @@ Infine, gli stessi gate $X$ applicati inizialmente vengono riapplicati, cosicch�
 Supponendo $N$ il numero di elementi, $n$ il numero di qubit dell'indirizzo e $m$ il numero di qubit per codificare il valore, allora questo procedimento richiede $\mathcal{O}(N \cdot n)$ gate $X$ e $\mathcal{O}(N \cdot m)$ gate di Toffoli generalizzati (multi-controllati). La profondità del circuito è la somma tra questi due termini.
 
 \subsection{Forma di bit}
-In forma di bit, la primitiva di accesso viene costruita tramite delle rotazioni, utilizzando nel presente contesto la tecnica impiegata in \cite{cantone2026quantumlcs}. Si rappresentino i dati come $N$ elementi $q_0, q_1, \dots, q_{N-1}$, ciascuno codificato su $m$ qubit, disposti in un unico registro di $N \cdot m$ qubit. Si definisca l'operatore di rotazione ciclica $R_s$, che trasla ciclicamente di $s$ posizioni gli $N$ elementi del registro:
-\begin{equation}
-  R_s |q_0, q_1, \dots, q_{N - 1}\rangle = |q_{-s \bmod N}, q_{1 - s \bmod N}, \dots, q_{N - 1 - s \bmod N}\rangle.
-\end{equation}
-Sfruttando la decomposizione binaria di un generico indirizzo $j = \sum_{i=0}^{n-1} j_i 2^i$, con $j_i \in \{0, 1\}$ ed $n = \lceil \log_2 N \rceil$ qubit di indirizzo, è possibile costruire l'operatore di rotazione parametrico $R_j$ come composizione di $n$ rotazioni controllate, ciascuna di ampiezza pari a una potenza di due:
-\begin{equation}
-  R_j = \prod_{i = 0}^{n - 1} C_{j_i}\left(R_{2^i}\right),
-\end{equation}
-dove $C_{j_i}(R_{2^i})$ denota la rotazione $R_{2^i}$ applicata in modo controllato dal qubit $i$-esimo del registro indirizzo $|j\rangle$. Poiché ogni bit del registro indirizzo controlla una rotazione di ampiezza distinta, questa costruzione realizza coerentemente, per ogni ramo della sovrapposizione di $|j\rangle$, la rotazione corrispondente al valore di $j$ codificato in quel ramo. Va inoltre notato che, essendo ogni elemento codificato su $m$ qubit, ciascuna rotazione controllata deve essere applicata separatamente a ciascuno degli $m$ "piani" di qubit che compongono gli elementi, agendo in parallelo sul qubit $b$-esimo di ogni elemento, per $b = 0, \dots, m-1$.
+In forma di bit, la primitiva di accesso viene costruita tramite rotazioni cicliche quantistiche, adattando al contesto l'\emph{Quantum Cyclic Rotation Gate} \cite{pavone2024rotgate} come impiegato in \cite{cantone2026quantumlcs}, con l'inversione degli indici.
 
-Applicando $R_j$ (o il suo inverso, a seconda della convenzione scelta), l'elemento $A[j]$ viene portato in una posizione di riferimento fissa del registro, ad esempio la posizione $0$, rendendolo così accessibile tramite semplici gate locali, non controllati, sia in lettura sia in scrittura; la rotazione inversa $R_j^\dagger$ riporta poi ogni elemento alla propria posizione originale. Rispetto alla codifica in forma circuitale, questo approccio richiede solamente $n = \lceil \log_2 N \rceil$ stadi di rotazione controllata anziché un numero di gate proporzionale a $N$, sebbene ciascuna rotazione agisca potenzialmente su tutti gli $N$ elementi, per cui la profondità complessiva del circuito resta significativa.
+I dati sono rappresentati come $N$ elementi $q_0, \dots, q_{N-1}$, ciascuno codificato su $m$ qubit, disposti in un unico registro di $N \cdot m$ qubit. Si definisce l'operatore di rotazione ciclica $R_s$:
+\begin{equation}
+  R_s |q_0, q_1, \dots, q_{N-1}\rangle = |q_{-s \bmod N}, \dots, q_{N-1-s \bmod N}\rangle.
+\end{equation}
+
+Sfruttando la decomposizione binaria dell'indirizzo $j = \sum_{i=0}^{n-1} j_i 2^i$ con $n = \lceil \log_2 N \rceil$, costruiamo l'operatore di rotazione parametrica come
+\begin{equation}
+  R_j = \prod_{i=0}^{n-1} C_{j_i}\bigl(R_{2^i}\bigr),
+\end{equation}
+dove ogni $C_{j_i}(R_{2^i})$ è la rotazione di $2^i$ posizioni controllata dal qubit $i$-esimo del registro indirizzo.
+
+Poiché ogni elemento è codificato su $m$ qubit, ciascuna rotazione controllata viene applicata separatamente (ma in parallelo) ai $m$ piani di qubit corrispondenti (qubit $b$-esimo di ogni elemento, per $b = 0, \dots, m-1$).
+
+In questa implementazione ogni rotazione ciclica $R_{2^i}$ viene realizzata tramite una permutazione controllata. Il costo complessivo risulta quindi in:
+\begin{itemize}
+  \item $\mathcal{O}(N m \log N)$ gate elementari (principalmente CNOT);
+  \item profondità $\mathcal{O}(N \log N)$.
+\end{itemize}
+
+Applicando $R_j$ (o il suo inverso $R_j^\dagger$), l'elemento $A[j]$ viene portato in una posizione fissa (ad esempio la posizione $0$), rendendolo accessibile con semplici gate locali non controllati per lettura e scrittura. La rotazione inversa ripristina la configurazione originale del registro.
 
 \begin{figure}[ht]
   \centering
@@ -150,14 +161,27 @@ dove l'ultimo qubit indica se il nodo $i$ rispetta la proprietà di max heap ris
 
 La parte del circuito indipendente dalla primitiva di accesso scelta, ossia calcolo dei figli, i due comparatori e il gate CCX finale, richiede $2n+4m-6$ gate CNOT, $8m-2$ gate $X$ e $n+2m-1$ gate di Toffoli generalizzati, per un totale di $3n+14m-9$ gate. Poiché nessuno di questi blocchi viene eseguito in parallelo con un altro, la profondità del circuito coincide con questo stesso numero.
 
-A questa parte comune si aggiunge il contributo delle tre applicazioni dell'oracolo di accesso $U_A$, che varia a seconda della primitiva scelta (Sezioni~\ref{sec:forma-circuitale}, \ref{sec:forma-bit}):
+A questa parte comune si aggiunge il contributo delle tre applicazioni dell'oracolo di accesso $U_A$, che varia sensibilmente a seconda della primitiva scelta (Sezioni~\ref{sec:forma-circuitale}, \ref{sec:forma-bit}):
+
 \begin{equation}
-  \text{Forma circuitale:} \quad 3n+14m-9 + \mathcal{O}(N\cdot n) \text{ gate } X + \mathcal{O}(N\cdot m) \text{ Toffoli generalizzati},
+  \begin{aligned}
+    \text{Forma circuitale:}
+     & \quad \text{gate: } 3n+14m-9 + \mathcal{O}(N(n+m)), \\
+     & \quad \text{profondità: } \mathcal{O}(N(n+m))
+  \end{aligned}
 \end{equation}
+
 \begin{equation}
-  \text{Forma di bit:} \quad 3n+14m-9 + \mathcal{O}(n\cdot m \cdot N) \text{ gate SWAP controllati}.
+  \begin{aligned}
+    \text{Forma di bit:}
+     & \quad \text{gate: } 3n+14m-9 + \mathcal{O}(N n m), \\
+     & \quad \text{profondità: } \mathcal{O}(N \log N)
+  \end{aligned}
 \end{equation}
-Il secondo termine, in entrambi i casi, domina il costo complessivo del circuito: il calcolo dei figli e il confronto restano polinomiali in $n$ e $m$, mentre l'intero costo dell'accesso ai dati cresce con $N$, cioè esponenzialmente nel numero di qubit di indirizzo.
+
+Nella forma circuitale, il numero totale di gate dell'oracolo di accesso costituisce un limite superiore alla sua profondità. Tuttavia, poiché molti gate multi-controllati condividono gli stessi controlli (pur scrivendo su qubit di output distinti), è ragionevole attendersi un certo grado di parallelismo. La profondità effettiva potrebbe quindi risultare inferiore al numero totale di gate, pur restando dello stesso ordine di grandezza $\mathcal{O}(N(n+m))$.
+
+Nella forma di bit, invece, le rotazioni controllate sono applicate sequenzialmente per ciascun bit dell'indirizzo. Questo produce un numero di gate dello stesso ordine di grandezza della forma circuitale (anzi leggermente superiore per il fattore $\log N$), ma con una profondità che rimane $\mathcal{O}(N \log N)$, senza un significativo disaccoppiamento tra numero di gate e profondità.
 
 Si noti che il comparatore $C_>$ impiegato realizza una disuguaglianza stretta, mentre la proprietà di max-heap (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:proprieta}) è definita con una disuguaglianza debole ($\geq$). Di conseguenza, un nodo con $A[i]=A[\text{Left}(i)]$ o $A[i]=A[\text{Right}(i)]$ viene qui segnalato come violazione, sebbene un array con valori duplicati in quella configurazione soddisfi comunque la proprietà classica. Questa scelta implica l'assunzione che l'array $A$ non contenga valori duplicati; rimuovere tale assunzione richiederebbe di sostituire $C_>$ con un comparatore per la relazione $\geq$, la cui costruzione segue comunque dallo stesso schema descritto nella Sezione~\ref{sec:disuguaglianza}.
 
@@ -189,50 +213,138 @@ L'intera iterata viene ripetuta $R \approx \left\lfloor \frac{\pi}{4}\sqrt{2^{n-
 
 Va osservato che questo numero di iterazioni assume l'esistenza di un'unica violazione ($M=1$) nello spazio di ricerca. Se le violazioni presenti sono più di una, la formula corretta diventa $R\approx\frac{\pi}{4}\sqrt{2^{n-2}/M}$ (Capitolo~\ref{ch:quantum}, Sezione~\ref{sec:algoritmi}); in particolare, quanto più l'heap risulta disordinato, tanto maggiore sarà $M$, e tanto più il rapporto si avvicinerà all'unità: in questo regime il vantaggio offerto da Grover rispetto a una singola misura casuale nello spazio di ricerca si riduce progressivamente, fino a rendere l'algoritmo sostanzialmente equivalente a un'estrazione casuale tra le violazioni presenti. Se invece non esiste alcuna violazione nello spazio di ricerca ($M=0$), non vi è alcuno stato da amplificare: l'oracolo di fase non introduce alcuna differenza di fase tra gli stati della sovrapposizione, e la misura finale restituisce, con probabilità pressoché uniforme, l'indirizzo di un nodo qualsiasi tra quelli considerati, il quale, non essendovi violazioni, rispetterà necessariamente la proprietà di max heap rispetto a entrambi i figli.
 
-Per quanto riguarda le risorse impiegate, il diffusore $D$ richiede $2(n-2)$ gate di Hadamard, $2(n-2)$ gate $X$ e un gate di Toffoli generalizzato, per un totale di $4n-7$ gate; la preparazione iniziale richiede $n$ gate (gli $n-2$ Hadamard sui qubit di ricerca, più un gate $X$ e uno di Hadamard sul qubit di fase). Ciascuna iterata di Grover applica $V$, il meccanismo di phase kickback (3 gate), $V^{-1}$ e il diffusore; la parte indipendente dalla primitiva di accesso, per singola iterata, ammonta dunque a $2(3n+14m-9)+3+(4n-7) = 10n+28m-22$ gate, a cui si aggiunge il contributo di sei applicazioni complessive dell'oracolo di accesso (tre in $V$, tre in $V^{-1}$):
+Per quanto riguarda le risorse impiegate, il diffusore $D$ richiede $2(n-2)$ gate di Hadamard, $2(n-2)$ gate $X$ e un gate di Toffoli generalizzato, per un totale di $4n-7$ gate, con profondità costante pari a $7$ (la maggior parte dei gate agisce in parallelo). La preparazione iniziale richiede $n$ Hadamard con profondità costante pari a $2$.
+
+Ciascuna iterata di Grover applica $V$, il meccanismo di phase kickback (profondità 3), $V^{-1}$ e il diffusore. Il costo indipendente dalla primitiva di accesso è quindi:
+\begin{itemize}
+  \item gate: $10n + 28m - 22$;
+  \item profondità: $6n + 28m - 8$.
+\end{itemize}
+A questo si aggiungono sei applicazioni dell'oracolo di accesso $U_A$ (tre in $V$ e tre in $V^{-1}$), il cui costo dipende dalla primitiva scelta (Sezione~\ref{sec:verifica-proprieta}):
+
+Il circuito completo, sommando preparazione iniziale e $R$ iterate di Grover, richiede:
 \begin{equation}
-  \text{Forma circuitale:} \quad 10n+28m-22 + 2\,\mathcal{O}(N\cdot n) + 2\,\mathcal{O}(N\cdot m) \quad \text{per iterata},
+  \begin{aligned}
+    \text{gate: }       & \; n + R\bigl(10n+28m-22 + 6\,\mathcal{O}(N(n+m))\bigr), \\
+    \text{profondità: } & \; 2 + R\bigl(6n+28m-8 + 6\,\mathcal{O}(N(n+m))\bigr)
+    \quad \text{(forma circuitale)}
+  \end{aligned}
 \end{equation}
+
 \begin{equation}
-  \text{Forma di bit:} \quad 10n+28m-22 + 2\,\mathcal{O}(n\cdot m\cdot N) \quad \text{per iterata}.
+  \begin{aligned}
+    \text{gate: }       & \; n + R\bigl(10n+28m-22 + 6\,\mathcal{O}(N n m)\bigr), \\
+    \text{profondità: } & \; 2 + R\bigl(6n+28m-8 + 6\,\mathcal{O}(N\log N)\bigr)
+    \quad \text{(forma di bit)}
+  \end{aligned}
 \end{equation}
-Il circuito completo, sommando la preparazione iniziale e le $R$ iterate, richiede dunque
-\begin{equation}
-  n + R\big(10n+28m-22+2\,\mathcal{O}(N\cdot n)+2\,\mathcal{O}(N\cdot m)\big) \qquad \text{(forma circuitale)},
-\end{equation}
-\begin{equation}
-  n + R\big(10n+28m-22+2\,\mathcal{O}(n\cdot m\cdot N)\big) \qquad \text{(forma di bit)}.
-\end{equation}
-Poiché $V$ e $V^{-1}$ non ammettono parallelismo interno, mentre il diffusore e la preparazione iniziale hanno profondità costante (rispettivamente $7$ e $2$, indipendentemente da $n$), la profondità dell'intero circuito segue lo stesso andamento del numero di gate, dominato in ogni caso dal fattore $R$, esponenziale in $n$.
+
+Poiché $R \approx \frac{\pi}{4}\sqrt{N}$ (con $N=2^n$), il termine dominante nella forma circuitale è $\mathcal{O}(N^{3/2}(n+m))$. Nella forma di bit, il termine dominante diventa $\mathcal{O}(N^{3/2} \log N)$.
+
+Si nota quindi che, il vantaggio di Grover rimane quadratico nel numero di iterazioni, ma la profondità complessiva del circuito rimane comunque polinomiale di grado elevato. Solo adottando una costruzione della rotazione controllata con ancille (come proposto in \cite{pavone2024rotgate}) si otterrebbe una profondità $\mathcal{O}(\sqrt{N} \log^2 N)$, rendendo il vantaggio di Grover visibile anche nella profondità del circuito.
 
 Va infine osservato che la scelta di Grover tratta lo spazio degli indirizzi come uno spazio di ricerca privo di struttura, ignorando le relazioni di adiacenza tra nodi imposte dalla topologia ad albero dell'heap. Approcci alternativi basati su quantum walk (Sezione~\ref{sec:stato-arte}) sfruttano invece esplicitamente tale topologia, e potrebbero in linea di principio offrire un vantaggio ulteriore rispetto a Grover generico, al costo però di una costruzione del circuito considerevolmente più complessa. La presente trattazione si limita a Grover proprio per la sua generalità e per la sua diretta compatibilità con l'oracolo di fase già introdotto nel Capitolo~\ref{ch:quantum}; un confronto quantitativo con un approccio a quantum walk resta un'estensione naturale di questo lavoro.
-\section{Vantaggi e limiti \label{sec:vantaggi-limiti}}
-Prima di passare alla verifica sperimentale, è utile raccogliere in un unico luogo il bilancio tra i vantaggi offerti dall'approccio proposto e i suoi limiti, alcuni dei quali già discussi puntualmente nelle sezioni precedenti.
-
-\subsection{Vantaggi}
-Il vantaggio caratteristico dell'algoritmo di Grover si manifesta nel \emph{numero di interrogazioni} necessarie a individuare una violazione, non nel costo complessivo del circuito. Classicamente, verificare se un heap soddisfi la propria proprietà richiede, nel caso peggiore, di esaminare tutti gli $N$ nodi interni (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:procedure}), cioè $\Theta(N)$ interrogazioni del singolo nodo. Il circuito di verifica $V$ (Sezione~\ref{sec:verifica-proprieta}), impiegato come oracolo all'interno di Grover, viene invece interrogato solamente $R \approx \frac{\pi}{4}\sqrt{2^{n-2}}$ volte, un numero proporzionale a $\sqrt{N}$: si tratta dello stesso vantaggio quadratico discusso nel Capitolo~\ref{ch:quantum} per il problema di ricerca non strutturata, qui applicato non alla ricerca di un elemento in un array, ma alla ricerca di una violazione strutturale.
-
-Un ulteriore vantaggio, di natura più qualitativa, è la modularità della costruzione: ciascun circuito ($U_L$, $U_R$, $C_>$, $U_A$) è stato definito e verificato indipendentemente, e la loro composizione in $V$ non ha richiesto alcuna modifica ai singoli blocchi. Questo suggerisce che la stessa metodologia possa estendersi ad altre proprietà strutturali locali definite su un array (ad esempio l'ordinamento tra elementi adiacenti), semplicemente sostituendo il comparatore o gli operatori di navigazione impiegati.
 
 \section{Vantaggi e limiti \label{sec:vantaggi-limiti}}
 Prima di passare alla verifica sperimentale, è utile raccogliere in un unico luogo il bilancio tra i vantaggi offerti dall'approccio proposto e i suoi limiti, alcuni dei quali già discussi puntualmente nelle sezioni precedenti.
 
 \subsection{Vantaggi}
-Il vantaggio caratteristico dell'algoritmo di Grover si manifesta nel \emph{numero di interrogazioni} necessarie a individuare una violazione, non nel costo complessivo del circuito. Classicamente, verificare se un heap soddisfi la propria proprietà richiede, nel caso peggiore, di esaminare tutti gli $N$ nodi interni (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:procedure}), cioè $\Theta(N)$ interrogazioni del singolo nodo. Il circuito di verifica $V$ (Sezione~\ref{sec:verifica-proprieta}), impiegato come oracolo all'interno di Grover, viene invece interrogato solamente $R \approx \frac{\pi}{4}\sqrt{2^{n-2}}$ volte, un numero proporzionale a $\sqrt{N}$: si tratta dello stesso vantaggio quadratico discusso nel Capitolo~\ref{ch:quantum} per il problema di ricerca non strutturata, qui applicato non alla ricerca di un elemento in un array, ma alla ricerca di una violazione strutturale.
+Il vantaggio caratteristico dell'algoritmo di Grover si manifesta anzitutto nel \emph{numero di interrogazioni} necessarie a individuare una violazione. Classicamente, verificare se un heap soddisfi la propria proprietà richiede, nel caso peggiore, di esaminare tutti gli $N$ nodi interni, cioè $\Theta(N)$ accessi. Il circuito di verifica $V$, impiegato come oracolo all'interno di Grover, viene invece interrogato solamente $R \approx \frac{\pi}{4}\sqrt{N}$ volte: si tratta del classico vantaggio quadratico applicato alla ricerca di una violazione strutturale.
 
-Un ulteriore vantaggio, di natura più qualitativa, è la modularità della costruzione: ciascun circuito ($U_L$, $U_R$, $C_>$, $U_A$) è stato definito e verificato indipendentemente, e la loro composizione in $V$ non ha richiesto alcuna modifica ai singoli blocchi. Questo suggerisce che la stessa metodologia possa estendersi ad altre proprietà strutturali locali definite su un array (ad esempio l'ordinamento tra elementi adiacenti), semplicemente sostituendo il comparatore o gli operatori di navigazione impiegati.
+Se si adotta la primitiva di accesso in forma di bit (Sezione~\ref{sec:forma-bit}), questo vantaggio nel numero di interrogazioni si accompagna a un diverso comportamento nella profondità del circuito. Come discusso in Sezione~\ref{sec:ricerca-violazioni}, la profondità complessiva dipende dall'implementazione della rotazione controllata. La costruzione teorica di \cite{pavone2024rotgate}, impiegata anche in \cite{cantone2026quantumlcs}, raggiunge $\mathcal{O}(\sqrt{N}\log^2 N)$ grazie all'uso di ancille per il fan-out; l'implementazione attuale, basata sulla sintesi automatica di Qiskit, produce invece una profondità di $\mathcal{O}(N^{3/2} \log N)$. Questo risultato resta quindi condizionato all'adozione di una costruzione ottimizzata con ancille (si veda la cautela discussa più sotto).
 
-\section{Vantaggi e limiti \label{sec:vantaggi-limiti}}
-Prima di passare alla verifica sperimentale, è utile raccogliere in un unico luogo il bilancio tra i vantaggi offerti dall'approccio proposto e i suoi limiti, alcuni dei quali già discussi puntualmente nelle sezioni precedenti.
-
-\subsection{Vantaggi}
-Il vantaggio caratteristico dell'algoritmo di Grover si manifesta nel \emph{numero di interrogazioni} necessarie a individuare una violazione, non nel costo complessivo del circuito. Classicamente, verificare se un heap soddisfi la propria proprietà richiede, nel caso peggiore, di esaminare tutti gli $N$ nodi interni (Capitolo~\ref{ch:heap}, Sezione~\ref{sec:procedure}), cioè $\Theta(N)$ interrogazioni del singolo nodo. Il circuito di verifica $V$ (Sezione~\ref{sec:verifica-proprieta}), impiegato come oracolo all'interno di Grover, viene invece interrogato solamente $R \approx \frac{\pi}{4}\sqrt{2^{n-2}}$ volte, un numero proporzionale a $\sqrt{N}$: si tratta dello stesso vantaggio quadratico discusso nel Capitolo~\ref{ch:quantum} per il problema di ricerca non strutturata, qui applicato non alla ricerca di un elemento in un array, ma alla ricerca di una violazione strutturale.
-
-Un ulteriore vantaggio, di natura più qualitativa, è la modularità della costruzione: ciascun circuito ($U_L$, $U_R$, $C_>$, $U_A$) è stato definito e verificato indipendentemente, e la loro composizione in $V$ non ha richiesto alcuna modifica ai singoli blocchi. Questo suggerisce che la stessa metodologia possa estendersi ad altre proprietà strutturali locali definite su un array (ad esempio l'ordinamento tra elementi adiacenti), semplicemente sostituendo il comparatore o gli operatori di navigazione impiegati.
+Un ulteriore vantaggio è la modularità della costruzione: ciascun blocco ($U_L$, $U_R$, $C_>$, $U_A$) è definito e verificato indipendentemente, rendendo la metodologia potenzialmente estendibile ad altre proprietà strutturali su array.
 
 \subsection{Limiti}
-Il vantaggio nel numero di interrogazioni non si traduce, con la costruzione qui presentata, in un vantaggio nel numero complessivo di gate. Il costo dominante dell'intero circuito è quello della primitiva di accesso $U_A$, pari a $\mathcal{O}(N\cdot n)$ (forma circuitale) o $\mathcal{O}(n\cdot m\cdot N)$ (forma di bit) per singola interrogazione (Sezioni~\ref{sec:verifica-proprieta}, \ref{sec:ricerca-violazioni}). Moltiplicando questo costo per le $R\approx\sqrt{N}$ interrogazioni necessarie, il numero complessivo di gate del circuito di ricerca cresce come $\mathcal{O}(N^{3/2})$, superiore al costo $\Theta(N)$ della verifica classica. In altre parole, la costruzione proposta dimostra un vantaggio nella complessità di query, ma non ancora un vantaggio nella complessità circuitale complessiva: quest'ultimo richiederebbe una primitiva di accesso più efficiente di quella qui impiegata, quale l'\emph{unary iteration} di Babbush et al.~\cite{Babbush_2018} la cui integrazione resta un'estensione naturale di questo lavoro.
+Il vantaggio descritto non è garantito per entrambe le primitive di accesso.
 
-A questo limite quantitativo si affiancano i limiti già discussi puntualmente: l'uso di Grover generico anziché di un approccio a quantum walk che sfrutti la topologia ad albero dell'heap (Sezione~\ref{sec:ricerca-violazioni}); l'assunzione implicita di valori non duplicati, dovuta all'uso di un comparatore a disuguaglianza stretta (Sezione~\ref{sec:verifica-proprieta}); l'assunzione di valori strettamente positivi, richiesta dal meccanismo dell'indirizzo vuoto (Sezione~\ref{sec:ricerca-violazioni}); e la scelta di limitare la rappresentazione dei dati a stati della base computazionale, escludendo sia stati quantistici arbitrari sia la codifica in ampiezza (Sezione~\ref{sec:forma-codifica}). Infine, l'intera trattazione è stata condotta e verificata su simulatore (Sezione~\ref{sec:esperimenti}): l'effetto del rumore su hardware reale non è stato affrontato in questo lavoro.
+Con la forma circuitale, il costo dominante resta quello della primitiva di accesso $U_A$, pari a $\mathcal{O}(N(n+m))$ gate per interrogazione. Moltiplicando per $R\approx\sqrt{N}$ iterazioni, la profondità del circuito di ricerca è limitata superiormente da $\mathcal{O}(N^{3/2}(n+m))$. Poiché molti gate multi-controllati condividono gli stessi controlli (pur scrivendo su qubit di output distinti), è possibile che si verifichi un certo grado di parallelismo, che potrebbe ridurre la profondità effettiva dell'oracolo. Con questa primitiva, tuttavia, non si ottiene un vantaggio quantistico dimostrabile nella profondità complessiva rispetto alla verifica classica $\Theta(N)$. Migliorare questo aspetto richiederebbe primitive di accesso più efficienti, quali l'\emph{unary iteration} di Babbush et al.~\cite{Babbush_2018} o architetture QRAM di tipo bucket-brigade.
 
-\section{Esperimenti \label{sec:esperimenti}}
+Con la forma di bit, il vantaggio nella profondità ($\mathcal{O}(\sqrt{N}\log^2 N)$) è subordinato a una condizione implementativa cruciale: la costruzione di \cite{pavone2024rotgate} richiede ancille dedicate per ottenere profondità polilogaritmica. L'implementazione attuale produce una profondità $\mathcal{O}(N\log N)$ per l'oracolo di accesso e $\mathcal{O}(N^{3/2}\log N)$ per l'intero algoritmo di Grover.
+
+A questi limiti si affiancano quelli già discussi puntualmente: l'uso di Grover generico anziché di un approccio a quantum walk che sfrutti la topologia ad albero dell'heap (Sezione~\ref{sec:ricerca-violazioni}); l'assunzione implicita di valori non duplicati, dovuta all'uso di un comparatore a disuguaglianza stretta (Sezione~\ref{sec:verifica-proprieta}); l'assunzione di valori strettamente positivi, richiesta dal meccanismo dell'indirizzo vuoto (Sezione~\ref{sec:ricerca-violazioni}); e la scelta di limitare la rappresentazione dei dati a stati della base computazionale, escludendo sia stati quantistici arbitrari sia la codifica in ampiezza (Sezione~\ref{sec:forma-codifica}). Infine, l'intera trattazione è stata condotta e verificata su simulatore (Sezione~\ref{sec:esperimenti}): l'effetto del rumore su hardware reale, rilevante in particolare per un circuito di profondità crescente con $R$, non è stato affrontato in questo lavoro.
+
+\section{Valutazione sperimentale \label{sec:esperimenti}}
+
+La valutazione sperimentale ha lo scopo di verificare il corretto funzionamento della struttura proposta mediante la simulazione dei circuiti quantistici descritti nei capitoli precedenti. In particolare, gli esperimenti sono stati progettati per analizzare il comportamento del verificatore della proprietà di max-heap in presenza sia di strutture valide, sia di strutture contenenti una o più violazioni dell'invariante.
+
+Gli esperimenti sono stati eseguiti considerando inizialmente una struttura composta da sette elementi:
+
+\[
+  A = [7,6,5,4,3,2,1]
+\]
+
+Tale configurazione rappresenta un max-heap valido, in cui ogni nodo interno soddisfa la relazione:
+
+\[
+  A[i] \geq A[2i+1] \land A[i] \geq A[2i+2]
+\]
+
+Successivamente sono state considerate due configurazioni ottenute modificando alcuni elementi della struttura, introducendo una violazione controllata della proprietà di max-heap:
+
+\[
+  A_1 = [7,6,2,4,3,1,5]
+\]
+
+e
+
+\[
+  A_2 = [7,3,5,4,6,2,1]
+\]
+
+Nella prima configurazione non valida, il nodo contenente il valore $2$ viola la proprietà di max-heap, poiché il figlio destro contiene il valore $5$. Nella seconda configurazione, invece, il nodo contenente il valore $3$ risulta inferiore al proprio figlio destro contenente il valore $6$.
+
+Per ciascuna configurazione è stato applicato il circuito completo composto dalla primitiva di accesso alla memoria, dagli operatori per il calcolo delle relazioni padre-figlio e dal verificatore della proprietà. Il registro degli indirizzi è stato inizializzato in sovrapposizione, consentendo al circuito di valutare simultaneamente i diversi nodi della struttura.
+
+Nel caso del max-heap valido:
+
+\[
+  A=[7,6,5,4,3,2,1]
+\]
+
+I risultati riportati sotto rappresentano l'indirizzo del nodo per cui non vale la proprietà.
+
+la simulazione ha prodotto la seguente distribuzione degli stati misurati:
+
+\begin{verbatim}
+{'0010': 249,
+ '0001': 267,
+ '0000': 224,
+ '0011': 284}
+\end{verbatim}
+
+
+
+L'assenza di uno stato dominante indica che nessun indirizzo della struttura viene marcato come violante dall'oracolo. La distribuzione osservata è dovut aalla sovrapposizione iniziale del registro degli indirizzi e alla natura probabilistica della misura quantistica.
+
+Per la prima configurazione contenente una violazione:
+
+\[
+  A_1=[7,6,2,4,3,1,5]
+\]
+
+il risultato ottenuto è:
+
+\begin{verbatim}
+{'0010': 1024}
+\end{verbatim}
+
+In questo caso il circuito individua in maniera deterministica l'indirizzocorrispondente al nodo che viola la proprietà di max-heap. La probabilità diosservazione dello stato marcato risulta quindi pari al $100\%$, confermando il corretto funzionamento del verificatore.
+
+Infine, considerando la seconda configurazione non valida:
+
+\[
+  A_2=[7,3,5,4,6,2,1]
+\]
+
+la simulazione ha prodotto:
+
+\begin{verbatim}
+{'0001': 1024}
+\end{verbatim}
+
+Anche in questo caso il circuito identifica correttamente l'indirizzoassociato al nodo che viola l'invariante del max-heap.
+
+I risultati ottenuti confermano quindi che la procedura di verifica proposta è in grado di distinguere correttamente tra configurazioni valide e configurazioni contenenti violazioni della proprietà di ordinamento. In particolare, il verificatore locale associa ogni violazione al corrispondente indirizzo della struttura, fornendo il predicato necessario per l'applicazione di un algoritmo di ricerca quantistica come Grover.
+
+È importante sottolineare che gli esperimenti effettuati rappresentano una verifica funzionale della correttezza dei circuiti proposti e non unavalutazione delle prestazioni computazionali su larga scala. Il numero limitato di elementi considerati è infatti dovuto al costo della simulazione classica dicircuiti quantistici, che cresce esponenzialmente con il numero di qubit coinvolti. Una valutazione più approfondita della scalabilità richiederebbe l'utilizzo di simulatori specializzati o l'esecuzione su dispositivi quantistici reali.

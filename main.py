@@ -8,38 +8,15 @@ def main():
   cQRegValues: QuantumRegister = QuantumRegister(15)
   phase: QuantumRegister = QuantumRegister(1)
   creg: ClassicalRegister = ClassicalRegister(27)
-  vector: list[int] = [5, 6, 7, 4, 3, 2, 1]
-  bits: int = 5
+  vector: list[int] = [7, 6, 2, 4, 3, 1, 5]
+  bits: int = 4
 
   fullCircuit = QuantumCircuit(cQAddrValues, cQRegValues, phase, creg)
 
-  fullCircuit.compose(leftChildCircuit(
-      bits, cQAddrValues, cQRegValues), inplace=True)
-  fullCircuit.barrier()
-  fullCircuit.compose(rightChildCircuit(
-      bits, cQAddrValues, cQRegValues, addrStartIndex=5), inplace=True)
+  fullCircuit.compose(groverSearch(
+      vector, bits, cQAddrValues, cQRegValues), inplace=True)
 
-  # fullCircuit.compose(selectAccess(
-  #     vector, bits, customQAddrReg=cQAddrValues, customQRegValues=cQRegValues), inplace=True)
-  # fullCircuit.compose(selectAccess(
-  #     vector, bits, customQAddrReg=cQAddrValues, customQRegValues=cQRegValues, addrStartIndex=4, valuesStartIndex=4), inplace=True)
-  # fullCircuit.compose(selectAccess(
-  #     vector, bits, customQAddrReg=cQAddrValues, customQRegValues=cQRegValues, addrStartIndex=8, valuesStartIndex=8), inplace=True)
-
-  # fullCircuit.compose(greaterThan(
-  #     bits, qregs=[cQAddrValues, cQRegValues], firstValueStartIndex=12, secondValueStartIndex=16, outIndex=24), inplace=True)
-  # fullCircuit.compose(greaterThan(
-  #     bits, qregs=[cQAddrValues, cQRegValues], firstValueStartIndex=12, secondValueStartIndex=20, outIndex=25), inplace=True)
-
-  # fullCircuit.ccx(cQRegValues[-3], cQRegValues[-2], cQRegValues[-1])
-
-  # fullCircuit.compose(propertyVerifier(
-  #     vector, bits, cQAddrValues, cQRegValues), inplace=True)
-
-  # fullCircuit.compose(groverSearch(
-  #     vector, bits, cQAddrValues, cQRegValues), inplace=True)
-
-  fullCircuit.draw('mpl', filename='test.jpg')
+  # fullCircuit.draw('mpl', filename='test.jpg')
 
   fullCircuit.barrier()
 
