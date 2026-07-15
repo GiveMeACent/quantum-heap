@@ -131,7 +131,7 @@ Codificare i due indirizzi richiede un totale di $2n$ qubit. Il circuito per il 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=0.45\textwidth]{Images/children_circuit.png}
-  \caption{Un esempio di calcolo di figlio destro e sinistro.}
+  \caption{Un esempio di calcolo di figlio sinistro e destro.}
   \label{fig:children_calc}
 \end{figure}
 
@@ -159,7 +159,10 @@ Il circuito opera su due registri: un registro di indirizzi, suddiviso in tre bl
 
 Complessivamente, indicando con $f_L = [A[i] > A[\text{Left}(i)]]$ e $f_R = [A[i] > A[\text{Right}(i)]]$ i due risultati intermedi dei confronti, il circuito realizza l'evoluzione unitaria:
 \begin{equation}
-  V |i\rangle |0\rangle^{\otimes(\ldots)} = |i\rangle\, |\text{Left}(i)\rangle\, |\text{Right}(i)\rangle\, |A[i]\rangle\, |A[\text{Left}(i)]\rangle\, |A[\text{Right}(i)]\rangle\, |f_L\rangle\, |f_R\rangle\, \big|f_L \wedge f_R\big\rangle,
+  \begin{aligned}
+    V |i\rangle |0\rangle^{\otimes(\ldots)} = {} & |i\rangle\, |\text{Left}(i)\rangle\, |\text{Right}(i)\rangle\, |A[i]\rangle\, |A[\text{Left}(i)]\rangle\, \\
+                                                 & |A[\text{Right}(i)]\rangle\, |f_L\rangle\, |f_R\rangle\, \big|f_L \wedge f_R\big\rangle,
+  \end{aligned}
 \end{equation}
 dove l'ultimo qubit indica se il nodo $i$ rispetta la proprietà di max heap rispetto a entrambi i figli.
 
@@ -243,7 +246,14 @@ Il circuito completo, sommando preparazione iniziale e $R$ iterate di Grover, ri
   \end{aligned}
 \end{equation}
 
-Poiché $R \approx \frac{\pi}{4}\sqrt{N}$, il termine dominante nella forma circuitale è $\mathcal{O}(N^{3/2}(n+m))$. Nella forma di bit, il termine dominante diventa $\mathcal{O}(N^{3/2}m\log N)$.
+Poiché $R \approx \frac{\pi}{4}\sqrt{N}$, il termine dominante nella forma circuitale è:
+\begin{equation}
+  \mathcal{O}(N^{3/2}(n+m))
+\end{equation}
+Nella forma di bit, il termine dominante diventa $\mathcal{O}(N^{3/2}m\log N)$
+\begin{equation}
+  \mathcal{O}(N^{3/2}m\log N)
+\end{equation}
 
 Si nota quindi che, il vantaggio di Grover rimane quadratico nel numero di iterazioni, ma la profondità complessiva del circuito rimane comunque polinomiale di grado elevato. Solo adottando una costruzione della rotazione controllata con ancille (come proposto in \cite{pavone2024rotgate}) si otterrebbe una profondità $\mathcal{O}(\sqrt{N} \log^2 N)$, rendendo il vantaggio di Grover visibile anche nella profondità del circuito.
 
