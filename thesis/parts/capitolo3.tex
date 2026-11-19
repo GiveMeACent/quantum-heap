@@ -329,7 +329,7 @@ la simulazione ha prodotto la seguente distribuzione degli stati misurati:
 
 
 
-L'assenza di uno stato dominante indica che nessun indirizzo della struttura viene marcato come violante dall'oracolo. La distribuzione osservata è dovut aalla sovrapposizione iniziale del registro degli indirizzi e alla natura probabilistica della misura quantistica.
+L'assenza di uno stato dominante indica che nessun indirizzo della struttura viene marcato come violante dall'oracolo. La distribuzione osservata è dovuta alla sovrapposizione iniziale del registro degli indirizzi e alla natura probabilistica della misura quantistica.
 
 Per la prima configurazione contenente una violazione:
 
@@ -343,7 +343,7 @@ il risultato ottenuto è:
 {'0010': 1024}
 \end{verbatim}
 
-In questo caso il circuito individua in maniera deterministica l'indirizzocorrispondente al nodo che viola la proprietà di max-heap. La probabilità diosservazione dello stato marcato risulta quindi pari al $100\%$, confermando il corretto funzionamento del verificatore.
+In questo caso il circuito individua in maniera deterministica l'indirizzo corrispondente al nodo che viola la proprietà di max-heap. La probabilità di osservazione dello stato marcato risulta quindi pari al $100\%$, confermando il corretto funzionamento del verificatore.
 
 Infine, considerando la seconda configurazione non valida:
 
@@ -361,4 +361,4 @@ Anche in questo caso il circuito identifica correttamente l'indirizzo associato 
 
 I risultati ottenuti confermano quindi che la procedura di verifica proposta è in grado di distinguere correttamente tra configurazioni valide e configurazioni contenenti violazioni della proprietà di ordinamento. In particolare, il verificatore locale associa ogni violazione al corrispondente indirizzo della struttura, fornendo il predicato necessario per l'applicazione di un algoritmo di ricerca quantistica come Grover.
 
-È importante sottolineare che gli esperimenti effettuati rappresentano una verifica funzionale della correttezza dei circuiti proposti e non unavalutazione delle prestazioni computazionali su larga scala. Il numero limitato di elementi considerati è infatti dovuto al costo della simulazione classica dicircuiti quantistici, che cresce esponenzialmente con il numero di qubit coinvolti. Una valutazione più approfondita della scalabilità richiederebbe l'utilizzo di simulatori specializzati o l'esecuzione su dispositivi quantistici reali.
+È importante sottolineare che gli esperimenti effettuati rappresentano una verifica funzionale della correttezza dei circuiti proposti e non una valutazione delle prestazioni computazionali su larga scala. Il numero limitato di elementi considerati è infatti dovuto al costo della simulazione classica di circuiti quantistici, che cresce esponenzialmente con il numero di qubit coinvolti. Una valutazione più approfondita della scalabilità richiederebbe l'utilizzo di simulatori specializzati o l'esecuzione su dispositivi quantistici reali.
